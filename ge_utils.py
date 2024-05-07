@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import random
 from math import inf
 
 GENE_LEN = 10
@@ -18,7 +19,7 @@ class Gene():
         i = 0
         while i < len(self.genotype):
             if np.random.random() > 0.8:
-                self.genotype[i] = np.random.randint(0, 100)
+                self.genotype[i] = random.randint(0, 100)
             i += 1
 
 """
