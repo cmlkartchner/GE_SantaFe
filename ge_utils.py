@@ -1,8 +1,9 @@
 import numpy as np
 import re
 from math import inf
+import random
 
-GENE_LEN = 10
+GENE_LEN = 30
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -94,3 +95,19 @@ def crossover(gene_1, gene_2):
     new_gene_2.genotype.extend(gene_1.genotype[GENE_LEN//2:])
     return new_gene_1, new_gene_2
 
+
+if __name__ == "__main__":
+    # test the functions
+    rules = {
+        "<code>": ["<code>", "<progs>"],
+        "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
+        "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
+        "<prog2>" : ["prog2(<progs>,<progs>)"],
+        "<prog3>" : ["prog3(<progs>,<progs>,<progs>)"],
+        "<op>" :["left","right","move"] 
+    }
+
+    gene = Gene([random.randint(0,9) for i in range(GENE_LEN)])
+    expression = generate_phenotype(rules, "<code>", gene)
+    print(expression)
+    #print(evaluate_fitness(expression))
