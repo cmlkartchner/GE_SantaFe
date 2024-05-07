@@ -2,6 +2,7 @@ import re
 import random
 import numpy as np
 from math import inf, log, sqrt, sin, cos
+from ge_utils import Gene, generate_phenotype, parse_expression
 
 GENE_LEN = 10
 NUM_GENERATIONS = 20
@@ -28,50 +29,6 @@ rules = {
             "<n>"],
     "<n>": ["1", "2", "3", "4"]
 }
-
-class Gene():
-    def __init__(self, genotype) -> None:
-        self.genotype = genotype
-        self.current_codon = 0
-        self.phenotype = None
-        self.cost = 0
-    
-    def get_codon(self):
-        return self.genotype[self.current_codon]
-    
-    def mutate(self):
-        i = 0
-        while i < len(self.genotype):
-            if np.random.random() > 0.8:
-                self.genotype[i] = np.random.randint(0, 100)
-            i += 1
-    
-
-def generate_string(rules, start_symbol, gene):
-    # for each codon
-    expression = start_symbol
-    expression = parse_expression(rules, start_symbol, gene, expression)
-    return expression
-
-def parse_expression(rules, expression, gene, terminal_string):
-    non_terminals = re.findall("<[^>]+>", expression)
-    # for each non-terminal:
-    for non_terminal in non_terminals:
-            if gene.current_codon >= len(gene.genotype):
-                return terminal_string
-            # decide on production rule
-            productions = rules.get(non_terminal)
-            production = productions[gene.get_codon() % len(productions)]
-
-            # substitute the non-terminal with the decided on production
-            terminal_string = re.sub(non_terminal, production, terminal_string, 1)
-
-            # ++current_codon
-            gene.current_codon += 1
-            
-            # repeat on the non-terminals in the production
-            terminal_string = parse_expression(rules, production, gene, terminal_string)
-    return terminal_string
     
 def evaluate_cost(expression):
     # for each planet
@@ -110,8 +67,8 @@ gene_2 = Gene(random.sample(range(1, 100), GENE_LEN))
 while current_generation < NUM_GENERATIONS:
     print(f"GENERATION {current_generation}")
     # parse
-    gene_1.phenotype = generate_string(rules, start_symbol, gene_1)
-    gene_2.phenotype = generate_string(rules, start_symbol, gene_2)
+    gene_1.phenotype = generate_phenotype(rules, start_symbol, gene_1)
+    gene_2.phenotype = generate_phenotype(rules, start_symbol, gene_2)
 
     # evaluate cost
     gene_1.cost = evaluate_cost(gene_1.phenotype)
