@@ -3,7 +3,7 @@ import re
 from math import inf
 import random
 
-GENE_LEN = 30
+GENE_LEN = 100
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -11,6 +11,7 @@ class Gene():
         self.current_codon = 0
         self.phenotype = None
         self.cost = 0
+        self.memory = [] # list of genotypes received from others
     
     def get_codon(self):
         return self.genotype[self.current_codon]
@@ -55,8 +56,8 @@ def parse_expression(rules, expression, gene, terminal_string):
             if gene.current_codon >= len(gene.genotype):
                 return terminal_string
             # decide on production rule
-            productions = rules.get(non_terminal)
-            production = productions[gene.get_codon() % len(productions)]
+            productions = rules.get(non_terminal) # list of possible productions
+            production = productions[gene.get_codon() % len(productions)] # select one
 
             # substitute the non-terminal with the decided on production
             terminal_string = re.sub(non_terminal, production, terminal_string, 1)
@@ -99,7 +100,7 @@ def crossover(gene_1, gene_2):
 if __name__ == "__main__":
     # test the functions
     rules = {
-        "<code>": ["<code>", "<progs>"],
+        "<code>": ["<code>", "<progs>", "<progs>"],
         "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
         "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
         "<prog2>" : ["prog2(<progs>,<progs>)"],
