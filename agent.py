@@ -4,7 +4,6 @@ EAST = 1
 SOUTH = 2
 WEST = 3
 GRID_SIZE = 30
-# coord
 import random
 class agent:
     def __init__(self, grid) -> None:
@@ -103,32 +102,37 @@ class Obstacle:
         return "O"
 
 class Grid:
-    FOOD_PROB = 0.2
+    FOOD_NUM = 89
     OBSTACLE_PROB = 0.05
     def __init__(self, width, height) -> None:
         self.width = width
         self.height = height
         self.array = [[None for _ in range(width)] for _ in range(height)]
-        self.add_food_and_obstacles(self.FOOD_PROB, self.OBSTACLE_PROB)
+        self.add_food_and_obstacles(self.FOOD_NUM, self.OBSTACLE_PROB)
 
     def in_bounds(self,x,y):
         if self.width > x >= 0 and self.height > y >= 0:
             return True
         return False
     
-    def add_food_and_obstacles(self, food_prob, obstacle_prob):
-        # 20
-
+    def add_food_and_obstacles(self, food_num, obstacle_prob):
+        # add obstacles first so that they can't overwrite food
         # pick food_num spots and insert food
+
+        # add obstacles
         for i in range(self.width):
             for j in range(self.height):
-                chance = random.random()
-                if chance < food_prob: #20% 
-                    food = Food(i,j)
-                    self.array[food.position[1]][food.position[0]] = food
-                elif chance < food_prob + obstacle_prob:
+                if random.random() < obstacle_prob:
                     obstacle = Obstacle(i,j)
                     self.array[obstacle.position[1]][obstacle.position[0]] = obstacle
+
+        # add food
+        while food_num > 0:
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            if self.array[y][x] is None:
+                self.array[y][x] = Food(x, y)
+                food_num -= 1
         
     def print_grid(self):
         for row in self.array:
