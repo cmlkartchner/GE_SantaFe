@@ -1,32 +1,13 @@
 
 def prog2(progs1, progs2):
-    print("prog2")
-    if callable(progs1):
-        progs1()
-    if callable(progs2):
-        progs2()
-
+    print("prog2 is done") # all arguments are evaluated before calling
 def prog3(progs1, progs2, progs3):
-    print("prog3")
-    # progs could be a function call if_food_ahead(move, left) -> already evaluated
-    # else progs is a function (left, right, move)
-    if callable(progs1):
-        progs1()
-    if callable(progs2):
-        progs2()
-    if callable(progs3):
-        progs3()
-
-def if_food_ahead(progs1, progs2):
-    print("look for food ahead")
-    if food_ahead():
-        progs1()
-    else:
-        progs2()
+    print("prog3 is done") # all arguments are evaluated before calling
 
 def food_ahead():
     # TODO: create grid or something 
     return True
+
 def left():
     print("turned left")
     pass
@@ -37,19 +18,28 @@ def move():
     print("moved")
     pass
 
+def if_food_ahead(arg1, arg2):
+    print("look for food ahead")
+    if food_ahead():
+        arg1()
+    else:
+        arg2()
+
 def run_phenotype(phenotype):
-    # translate phenotype to python code
-    # run code
-    # prog3(if_food_ahead(right,move),if_food_ahead(move,left),move)
+    phenotype = phenotype.replace("left", "left||").replace("right", "right||").replace("move", "move||")
+    # for if_food_ahead remove () for parameters inside function
+    
+    for i in range(len(phenotype)):
+        if phenotype[i:].startswith("if_food_ahead"):
+            left_index = phenotype.find("(", i)
+            right_index = phenotype.find(")", i)
+            fixed_string = phenotype[left_index:right_index].replace("|", "")
+            phenotype = phenotype[:left_index] + fixed_string + phenotype[right_index:]
+    phenotype = phenotype.replace("||", "()")
     return eval(phenotype)
+
+run_phenotype("prog3(move, if_food_ahead(right,move),move)")
 
 # prog3(if_food_ahead(right,move),if_food_ahead(move,left),move)
 # prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))
-run_phenotype("prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))")
-
-# "<code>": ["<code>", "<progs>", "<progs>"],
-#         "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
-#         "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
-#         "<prog2>" : ["prog2(<progs>,<progs>)"],
-#         "<prog3>" : ["prog3(<progs>,<progs>,<progs>)"],
-#         "<op>" :["left","right","move"] 
+#run_phenotype("prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))")
