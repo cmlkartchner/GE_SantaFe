@@ -1,1 +1,1 @@
-import random
+y = x^2 + 2x + 1
