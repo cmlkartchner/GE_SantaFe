@@ -38,7 +38,7 @@ def run_phenotype(phenotype):
     phenotype = phenotype.replace("||", "()")
     return eval(phenotype)
 
-run_phenotype("prog3(move, if_food_ahead(right,move),move)")
+run_phenotype("prog3(move, prog2(move, if_food_ahead(right,left)),move)")
 
 # prog3(if_food_ahead(right,move),if_food_ahead(move,left),move)
 # prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))
