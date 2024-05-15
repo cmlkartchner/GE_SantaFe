@@ -61,8 +61,6 @@ class agent:
         else: # did not move
             return
 
-        # self.grid.array[self.position[1]][self.position[0]] = self # move agent to new position
-        # self.grid.array[prev_position[1]][prev_position[0]] = None
         self.grid.update_history(self, self.position)
 
     def if_food_ahead(self, arg1, arg2):
@@ -179,9 +177,6 @@ class Grid:
                         row_str += str(self.array[i][j])
             print(row_str)
         
-
-    
-
 
 if __name__ == "__main__":
     grid = Grid(GRID_SIZE, GRID_SIZE)
