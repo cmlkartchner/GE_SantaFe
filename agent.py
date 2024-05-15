@@ -1,19 +1,7 @@
 from ge_utils import Gene
 import random
-NORTH = 0
-EAST = 1
-SOUTH = 2
-WEST = 3
-GRID_SIZE = 10
-GENE_LEN = 100
-RULES = {
-        "<code>": ["<code>", "<progs>", "<progs>"],
-        "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
-        "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
-        "<prog2>" : ["prog2(<progs>,<progs>)"],
-        "<prog3>" : ["prog3(<progs>,<progs>,<progs>)"],
-        "<op>" :["left","right","move"] 
-    }
+from constants import GENE_LEN, GRID_SIZE, RULES
+from constants import NORTH, EAST, SOUTH, WEST
 
 class agent:
     def __init__(self, grid) -> None:

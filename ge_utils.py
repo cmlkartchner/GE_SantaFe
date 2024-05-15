@@ -2,8 +2,7 @@ import numpy as np
 import re
 from math import inf
 import random
-
-GENE_LEN = 100
+from constants import GENE_LEN
 
 class Gene():
     def __init__(self, genotype) -> None:

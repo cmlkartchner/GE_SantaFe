@@ -4,16 +4,7 @@ from ge_utils import Gene
 import random
 from ge_utils import generate_phenotype, crossover
 import time
-GENE_LEN = 100
-POPULATION_SIZE = 50
-RULES = {
-        "<code>": ["<code>", "<progs>", "<progs>"],
-        "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
-        "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
-        "<prog2>" : ["prog2(<progs>,<progs>)"],
-        "<prog3>" : ["prog3(<progs>,<progs>,<progs>)"],
-        "<op>" :["left","right","move"] 
-    }
+from constants import GENE_LEN, RULES, POPULATION_SIZE
 
 def generate_population(size, genome_length):
     genes = [Gene([random.randint(0, 100) for i in range(genome_length)]) for i in range(size)]
