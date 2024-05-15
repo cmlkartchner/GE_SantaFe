@@ -1,10 +1,20 @@
-
+from ge_utils import Gene
+import random
 NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
 GRID_SIZE = 10
-import random
+GENE_LEN = 100
+RULES = {
+        "<code>": ["<code>", "<progs>", "<progs>"],
+        "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
+        "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
+        "<prog2>" : ["prog2(<progs>,<progs>)"],
+        "<prog3>" : ["prog3(<progs>,<progs>,<progs>)"],
+        "<op>" :["left","right","move"] 
+    }
+
 class agent:
     def __init__(self, grid) -> None:
         # cost information
@@ -21,8 +31,8 @@ class agent:
 
         # genetic information
         self.memory = [] # contains multiple genes
-        self.gene = None
-        self.phenotype = None
+        self.gene = Gene([random.randint(0, 100) for i in range(GENE_LEN)])
+        self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
 
     # functions from the grammar
     def prog2(self, progs1, progs2):
@@ -60,8 +70,12 @@ class agent:
             self.position = (self.position[0] - 1, self.position[1])
         else: # did not move
             return
-
+        
+        # avoid double counting food
+        if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
+            self.food_touched += 1
         self.grid.update_history(self, self.position)
+        self.distance += 1
 
     def if_food_ahead(self, arg1, arg2):
         print("look for food ahead")
@@ -87,7 +101,9 @@ class agent:
                 fixed_string = phenotype[left_index:right_index].replace("|", "")
                 phenotype = phenotype[:left_index] + fixed_string + phenotype[right_index:]
         phenotype = phenotype.replace("||", "()")
-        return eval(phenotype)
+        
+        eval(phenotype) # runs the program
+        self.gene.cost = self.food_touched - self.distance / 10 # fitness function TODO: make better
     
     def __str__(self) -> str:
         return "A"
@@ -97,16 +113,14 @@ class Food:
         self.position = (x,y)
     def __str__(self) -> str:
         return "F"
-
 class Obstacle:
     def __init__(self, x, y) -> None:
         self.position = (x, y)
     def __str__(self) -> str:
         return "O"
-
 class Grid:
     FOOD_NUM = 89
-    OBSTACLE_PROB = 0.05
+    OBSTACLE_PROB = 0
     def __init__(self, width, height) -> None:
         self.width = width
         self.height = height

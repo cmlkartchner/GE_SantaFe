@@ -23,19 +23,19 @@ class Gene():
                 self.genotype[i] = np.random.randint(0, 100)
             i += 1
 
-"""
-Generates the program/expression represented by the gene i.e. the phenotype.
-rules: a dictionary containing production rules with key value pairs (string: string[]) where
-        the key is in format "<val>"
-start_symbol: a string whose value isthe symbol you begin parsing from;
-        must be a symbol within rules
-gene: a Gene whose current_codon is 0
-"""
-def generate_phenotype(rules, start_symbol, gene):
-    # for each codon
-    expression = start_symbol
-    expression = parse_expression(rules, start_symbol, gene, expression)
-    return expression
+    """
+    Generates the program/expression represented by the gene i.e. the phenotype.
+    rules: a dictionary containing production rules with key value pairs (string: string[]) where
+            the key is in format "<val>"
+    start_symbol: a string whose value isthe symbol you begin parsing from;
+            must be a symbol within rules
+    gene: a Gene whose current_codon is 0
+    """
+    def generate_phenotype(self, rules, start_symbol):
+        # for each codon
+        expression = start_symbol
+        expression = parse_expression(rules, start_symbol, self, expression)
+        return expression
 
 """
 A recursive function that evaluates non-terminals in a string in a
