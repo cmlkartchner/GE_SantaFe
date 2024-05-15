@@ -3,7 +3,7 @@ NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-GRID_SIZE = 30
+GRID_SIZE = 10
 import random
 class agent:
     def __init__(self, grid) -> None:
@@ -12,11 +12,12 @@ class agent:
         self.distance = 0 # how far it has traveled (not displacement)
 
         # simulation information
-        self.id = 0
+        self.id = random.randint(0, 1000000)
         self.heading = NORTH
-        self.position = (0, 0) # x,y BUT in the grid it is y,x
+        self.position = (GRID_SIZE//2, GRID_SIZE//2) # x,y BUT in the grid it is y,x
         self.grid = grid
-        self.grid.array[self.position[1]][self.position[0]] = self
+        #self.grid.array[self.position[1]][self.position[0]] = self
+        self.grid.update_history(self, self.position) # init with starting position
 
         # genetic information
         self.memory = [] # contains multiple genes
@@ -46,7 +47,8 @@ class agent:
         print("turned right")
         self.heading = (self.heading + 1) % 4
     def move(self):
-        print("moved")
+        print("moved", self.heading)
+        print("x=",self.position[0], "y=", self.position[1])
         prev_position = self.position
         if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
             self.position = (self.position[0], self.position[1] - 1)
@@ -56,9 +58,12 @@ class agent:
             self.position = (self.position[0], self.position[1] + 1)
         elif self.heading == WEST and self.grid.in_bounds(self.position[0] - 1,self.position[1]):
             self.position = (self.position[0] - 1, self.position[1])
+        else: # did not move
+            return
 
-        self.grid.array[self.position[1]][self.position[0]] = self # move agent to new position
-        self.grid.array[prev_position[1]][prev_position[0]] = 0
+        # self.grid.array[self.position[1]][self.position[0]] = self # move agent to new position
+        # self.grid.array[prev_position[1]][prev_position[0]] = None
+        self.grid.update_history(self, self.position)
 
     def if_food_ahead(self, arg1, arg2):
         print("look for food ahead")
@@ -68,10 +73,12 @@ class agent:
             arg2()
 
     def run_phenotype(self, phenotype):
-        left = agent.left
-        right = agent.right
-        move = agent.move
-        if_food_ahead = agent.if_food_ahead
+        prog3 = self.prog3
+        prog2 = self.prog2
+        left = self.left
+        right = self.right
+        move = self.move
+        if_food_ahead = self.if_food_ahead
         phenotype = phenotype.replace("left", "left||").replace("right", "right||").replace("move", "move||")
         # for if_food_ahead remove () for parameters inside function
         
@@ -86,8 +93,6 @@ class agent:
     
     def __str__(self) -> str:
         return "A"
-
-    #run_phenotype("prog3(move, prog2(move, if_food_ahead(right,left)),move)")
 
 class Food:
     def __init__(self, x, y) -> None:
@@ -109,6 +114,13 @@ class Grid:
         self.height = height
         self.array = [[None for _ in range(width)] for _ in range(height)]
         self.add_food_and_obstacles(self.FOOD_NUM, self.OBSTACLE_PROB)
+        self.history = {} # key: agent, value: set of positions agent has visited 
+
+    def update_history(self, agent, position):
+        if agent.id in self.history:
+            self.history[agent.id].add(position)
+        else:
+            self.history[agent.id] = {position}
 
     def in_bounds(self,x,y):
         if self.width > x >= 0 and self.height > y >= 0:
@@ -133,8 +145,11 @@ class Grid:
             if self.array[y][x] is None:
                 self.array[y][x] = Food(x, y)
                 food_num -= 1
-        
-    def print_grid(self):
+    
+    def color(self, item):
+        return "\x1b[33m" + str(item) +"\x1b[0m"
+    
+    def print_grid(self): # if bold = True, an agent must be specified 
         for row in self.array:
             row_str = ""
             for item in row:
@@ -143,6 +158,27 @@ class Grid:
                 else:
                     row_str += str(item)
             print(row_str)
+    
+    def print_history(self, agent):
+        positions = self.history[agent.id]
+        print(positions)
+
+        for i in range(self.height): # y
+            row_str = ""
+            for j in range(self.width): # x
+                if (j,i) in positions: # BOLD CASE
+                    if self.array[i][j] is None:
+                        row_str += self.color(".")
+                    else:
+                        row_str += self.color(self.array[i][j])
+
+                else: #Non-bold case
+                    if self.array[i][j] is None:
+                        row_str += "."
+                    else:
+                        row_str += str(self.array[i][j])
+            print(row_str)
+        
 
     
 
@@ -154,10 +190,9 @@ if __name__ == "__main__":
 
     a = agent(grid)
     grid.print_grid()
-    a.phenotype = "prog3(move, prog2(move, if_food_ahead(right,left)),move)"
+    a.phenotype = "prog3(move, left, move)"
+    #"prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))"
+    #"prog3(move, prog2(move, if_food_ahead(right,left)),move)"
     a.run_phenotype(a.phenotype)
-    # print(a.food_ahead())
-    # a.left()
-    # a.move()
-    # print(a.food_ahead())
-    # a.right()
+    print("done running")
+    grid.print_history(a)
