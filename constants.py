@@ -9,13 +9,15 @@ RULES = {
     }
 
 # evolve constants
-POPULATION_SIZE = 50
+GENERATIONS = 100
 
 # agent constants
 NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
+NUM_AGENTS = 50
 
 # grid constants
-GRID_SIZE = 10
+GRID_SIZE = 32
+

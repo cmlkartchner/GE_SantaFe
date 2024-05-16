@@ -3,7 +3,7 @@ import random
 from constants import GENE_LEN, GRID_SIZE, RULES
 from constants import NORTH, EAST, SOUTH, WEST
 
-class agent:
+class Agent:
     def __init__(self, grid) -> None:
         # cost information
         self.food_touched = 0 # no duplicates
@@ -96,6 +96,8 @@ class agent:
     def __str__(self) -> str:
         return "A"
 
+###### EVOLUTION 
+
 class Food:
     def __init__(self, x, y) -> None:
         self.position = (x,y)
@@ -185,7 +187,7 @@ if __name__ == "__main__":
     print("grid created")
 
 
-    a = agent(grid)
+    a = Agent(grid)
     grid.print_grid()
     a.phenotype = "prog3(move, left, move)"
     #"prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))"

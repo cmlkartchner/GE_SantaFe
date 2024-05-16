@@ -1,5 +1,3 @@
-
-
 from ge_utils import Gene
 import random
 from ge_utils import generate_phenotype, crossover
@@ -50,7 +48,7 @@ def act(gene: Gene):
     
     # eval new population and return the best
     for gene in new_population:
-        gene.phenotype = generate_phenotype(RULES, "<code>", gene)
+        gene.phenotype = gene.generate_phenotype(RULES, "<code>")
     new_population = sorted(new_population, key=lambda x: fitness(x))
 
     return new_population[0]

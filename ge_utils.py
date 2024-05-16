@@ -10,7 +10,7 @@ class Gene():
         self.current_codon = 0
         self.phenotype = None
         self.cost = 0
-        self.memory = [] # list of genotypes received from others
+        self.memory = [] # list of genotypes received from others...used for infeasible only
     
     def get_codon(self):
         return self.genotype[self.current_codon]
@@ -31,9 +31,16 @@ class Gene():
     gene: a Gene whose current_codon is 0
     """
     def generate_phenotype(self, rules, start_symbol):
-        # for each codon
-        expression = start_symbol
-        expression = parse_expression(rules, start_symbol, self, expression)
+        while True:
+            expression = start_symbol
+            print("genotype", self.genotype)
+            print("parsing", expression)
+            expression = parse_expression(rules, start_symbol, self, expression)
+            print("result", expression)
+            if "<" not in expression and ">" not in expression:
+                break
+            self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
+        print(expression)
         return expression
 
 """
