@@ -33,13 +33,11 @@ class Gene():
     def generate_phenotype(self, rules, start_symbol):
         while True:
             expression = start_symbol
-            print("genotype", self.genotype)
-            print("parsing", expression)
             expression = parse_expression(rules, start_symbol, self, expression)
-            print("result", expression)
             if "<" not in expression and ">" not in expression:
                 break
             self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
+            self.current_codon = 0
         print(expression)
         return expression
 
@@ -73,6 +71,7 @@ def parse_expression(rules, expression, gene, terminal_string):
             
             # repeat on the non-terminals in the production
             terminal_string = parse_expression(rules, production, gene, terminal_string)
+    
     return terminal_string
 
 """
@@ -115,6 +114,4 @@ if __name__ == "__main__":
     }
 
     gene = Gene([random.randint(0,9) for i in range(GENE_LEN)])
-    expression = generate_phenotype(rules, "<code>", gene)
-    print(expression)
-    #print(evaluate_fitness(expression))
+    expression = gene.generate_phenotype(rules, "<code>")

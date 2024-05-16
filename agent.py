@@ -24,9 +24,11 @@ class Agent:
 
     # functions from the grammar
     def prog2(self, progs1, progs2):
-        print("prog2 is done") # all arguments are evaluated before calling
+        pass
+        #print("prog2 is done") # all arguments are evaluated before calling
     def prog3(self, progs1, progs2, progs3):
-        print("prog3 is done") # all arguments are evaluated before calling
+        pass
+        #print("prog3 is done") # all arguments are evaluated before calling
     def food_ahead(self):
         # check if there is food in front of the agent
         if self.heading == NORTH:
@@ -39,14 +41,13 @@ class Agent:
             return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
 
     def left(self):
-        print("turned left")
+        #print("turned left")
         self.heading = (self.heading - 1) % 4
     def right(self):
-        print("turned right")
+        #print("turned right")
         self.heading = (self.heading + 1) % 4
     def move(self):
-        print("moved", self.heading)
-        print("x=",self.position[0], "y=", self.position[1])
+        #print("moved", self.heading)
         prev_position = self.position
         if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
             self.position = (self.position[0], self.position[1] - 1)
@@ -66,11 +67,14 @@ class Agent:
         self.distance += 1
 
     def if_food_ahead(self, arg1, arg2):
-        print("look for food ahead")
-        if self.food_ahead():
+        #print("look for food ahead")
+        if self.food_ahead() and callable(arg1):
             arg1()
-        else:
+        elif callable(arg2):
             arg2()
+        # if the one is not callable then that means it was already called and evaluted to none
+        # so no need to do anything extra
+        # example case: if_food_ahead(left,prog2(move,move))
 
     def run_phenotype(self, phenotype):
         prog3 = self.prog3
@@ -89,9 +93,9 @@ class Agent:
                 fixed_string = phenotype[left_index:right_index].replace("|", "")
                 phenotype = phenotype[:left_index] + fixed_string + phenotype[right_index:]
         phenotype = phenotype.replace("||", "()")
-        
+
         eval(phenotype) # runs the program
-        self.gene.cost = self.food_touched - self.distance / 10 # fitness function TODO: make better
+        self.gene.cost = self.food_touched + self.distance / 100 # fitness function TODO: make better
     
     def __str__(self) -> str:
         return "A"
@@ -163,8 +167,6 @@ class Grid:
     
     def print_history(self, agent):
         positions = self.history[agent.id]
-        print(positions)
-
         for i in range(self.height): # y
             row_str = ""
             for j in range(self.width): # x
@@ -185,7 +187,6 @@ class Grid:
 if __name__ == "__main__":
     grid = Grid(GRID_SIZE, GRID_SIZE)
     print("grid created")
-
 
     a = Agent(grid)
     grid.print_grid()

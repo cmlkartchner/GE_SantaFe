@@ -1,6 +1,6 @@
 GENE_LEN = 100 # length of the genotype
 RULES = {
-        "<code>": ["<code>", "<progs>", "<progs>"],
+        "<code>": ["<code>", "<progs>", "<progs>", "<progs>"],
         "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
         "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
         "<prog2>" : ["prog2(<progs>,<progs>)"],
