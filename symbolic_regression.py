@@ -46,7 +46,7 @@ plt.show()
 # TODO: implement GE to find mathematical models that fit the noise data
 print("GE Section:")
 rules = {
-    # TODO: create rules
+    # TODO: fix rule notation
     "<expr> ::= <expr> <op> <expr> | <var> | <const>",
     "<op>   ::= + | - | * | /",
     "<var>  ::= x | y | z",
