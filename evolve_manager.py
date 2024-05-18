@@ -18,11 +18,13 @@ class EvolveManager:
         neighbors = random.sample(self.population, num_neighbors)
         agent.gene.memory = [neighbor.gene for neighbor in neighbors]
         
-    def act(self, gene: Gene, agent):
+    def act(self, agent):
         # add genotype
         # perform selection, crossover, mutation
         # evaluate fitness
         # best genotype returned
+        if len(agent.memory) == 0:
+            return agent.gene
         agent.memory.append(agent.gene) #add agent's own gene
         sorted_genes = sorted(agent.memory, key=lambda x: x.cost)
         new_genes = sorted_genes[:2] # keep the top 2 automatically

@@ -38,7 +38,6 @@ class Gene():
                 break
             self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
             self.current_codon = 0
-        print(expression)
         return expression
 
 """

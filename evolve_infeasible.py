@@ -71,8 +71,8 @@ def selection_pair(population, fitness_func):
 def evolve():
     population = generate_population(POPULATION_SIZE, GENE_LEN) # create population
     fitnesses = [fitness(gene) for gene in population]
-    print(fitnesses)
-    print("")
+    # print(fitnesses)
+    # print("")
     solutions = [] # store feasible genes created
 
     for i in range(1000): # 1000 generations
@@ -96,7 +96,8 @@ results = evolve()
 fitnesses = [fitness(gene) for gene in results]
 
 for gene in results:
-    print(gene.phenotype)
-    print("_____________")
+    print("evolve_infeasible")
+    # print(gene.phenotype)
+    # print("_____________")
 
-print(fitnesses)
+#print(fitnesses)

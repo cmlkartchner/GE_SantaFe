@@ -26,11 +26,12 @@ NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-NUM_AGENTS = 50
+NUM_AGENTS = 5
 
 # grid constants
 GRID_WIDTH = 32
 GRID_HEIGHT = 32
+FOOD_NUM = 89
 
 THE_GRID = """
     .###............................

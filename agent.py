@@ -1,14 +1,15 @@
 from ge_utils import Gene
 import random
-from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID
+from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM
 from constants import NORTH, EAST, SOUTH, WEST
-
+from end_exception import EndException
 
 class Agent:
     def __init__(self, grid) -> None:
         # cost information
         self.food_touched = 0 # no duplicates
         self.distance = 0 # how far it has traveled (not displacement)
+        self.moves = 0 # how many actions: left, right, move
 
         # simulation information
         self.id = random.randint(0, 1000000)
@@ -26,10 +27,8 @@ class Agent:
     # functions from the grammar
     def prog2(self, progs1, progs2):
         pass
-        #print("prog2 is done") # all arguments are evaluated before calling
     def prog3(self, progs1, progs2, progs3):
         pass
-        #print("prog3 is done") # all arguments are evaluated before calling
     def food_ahead(self):
         # check if there is food in front of the agent
         if self.heading == NORTH:
@@ -42,13 +41,19 @@ class Agent:
             return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
 
     def left(self):
-        #print("turned left")
+        if self.should_end():
+            self.end()
+        self.moves+=1
         self.heading = (self.heading - 1) % 4
     def right(self):
-        #print("turned right")
+        if self.should_end():
+            self.end()
+        self.moves+=1
         self.heading = (self.heading + 1) % 4
     def move(self):
-        #print("moved", self.heading)
+        if self.should_end():
+            self.end()
+        self.moves+=1
         prev_position = self.position
         if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
             self.position = (self.position[0], self.position[1] - 1)
@@ -68,7 +73,6 @@ class Agent:
         self.distance += 1
 
     def if_food_ahead(self, arg1, arg2):
-        #print("look for food ahead")
         if self.food_ahead() and callable(arg1):
             arg1()
         elif callable(arg2):
@@ -77,6 +81,14 @@ class Agent:
         # so no need to do anything extra
         # example case: if_food_ahead(left,prog2(move,move))
 
+    # functions for ending the simulation
+    def should_end(self):
+        if self.food_touched == FOOD_NUM or self.moves == 400:
+            return True
+        return False
+    def end(self):
+        raise EndException("End of simulation")
+    
     def run_phenotype(self, phenotype):
         prog3 = self.prog3
         prog2 = self.prog2
@@ -95,8 +107,16 @@ class Agent:
                 phenotype = phenotype[:left_index] + fixed_string + phenotype[right_index:]
         phenotype = phenotype.replace("||", "()")
 
-        eval(phenotype) # runs the program
-        self.gene.cost = self.food_touched + self.distance / 100 # fitness function TODO: make better
+        # run program forever
+        # break if either touches all food or does threshold moves
+        try:
+            self.moves = 0 # reset from previous round
+            self.food_touched = 0
+            while(True):
+                eval(phenotype) # runs the program
+            
+        except EndException as e:
+            self.gene.cost = self.food_touched + self.distance / 100 # fitness function TODO: make better
     
     def __str__(self) -> str:
         return "A"
@@ -149,10 +169,8 @@ class Grid:
         self.width = len(rows[0])
         self.height = len(rows)
         for i in range(len(rows)):
-            print("the length of this row is ", len(rows[i]))
             for j in range(len(rows[i])):
                 if rows[i][j] == "#":
-                    print("start at row", i, "col", j, " So I put at x=", j, " y=", i )
                     self.array[i][j] = Food(j, i)
 
 
@@ -197,9 +215,6 @@ if __name__ == "__main__":
     a.phenotype = "prog3(move, left, move)"
     #"prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))"
     #"prog3(move, prog2(move, if_food_ahead(right,left)),move)"
-    # a.run_phenotype(a.phenotype)
-    # print("done running")
-    # grid.print_history(a)
 
     
 
