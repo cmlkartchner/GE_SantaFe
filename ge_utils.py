@@ -37,7 +37,7 @@ def generate_phenotype(rules, start_symbol, gene):
     return expression
 
 """
-A recursive function that evaluates non-terminals in a string in a
+A recursive function that evaluates non-terminals in a string in a 
 depth-first search.
 rules: a dictionary containing the production rules;
         same format as the rules in generate_phenotype

@@ -1,0 +1,1 @@
+''' This method sets up and runs the game loop '''

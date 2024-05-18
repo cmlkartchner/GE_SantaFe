@@ -1,2 +1,2 @@
 from environment import environment
-from agent import agent
+from agent import Agent

@@ -1,49 +1,62 @@
 import pygame
 import sys
 import random
+from agent import Agent
 
-''' This function is used to generate random rewards within the grid '''
-def generate_rewards(size, rows, num_rewards):
-    grid_size = size // rows
-    rewards_list = []
-    for _ in range(num_rewards):
-        x = random.randint(0, rows - 1) * grid_size
-        y = random.randint(0, rows - 1) * grid_size
-        rewards_list.append((x, y))
-    return rewards_list
+class Environment:
+    def __init__(self, size, rows, num_rewards):
+        self.size = size
+        self.rows = rows
+        self.num_rewards = num_rewards
+        self.rewards_list = self.generate_rewards()
+        self.agent = Agent(size, rows)
+        self.window = pygame.display.set_mode((size, size))
+        pygame.display.set_caption("Environment")
 
-''' This function is used to use pygame and generate the environment for the agent '''
-def draw_grid(window, size, rows, rewards_list):
-    grid_size = size // rows
-    for i in range(rows + 1):
-        pygame.draw.line(window, (255, 255, 255), (i * grid_size, 0), (i * grid_size, size))
-        pygame.draw.line(window, (255, 255, 255), (0, i * grid_size), (size, i * grid_size))
-    for reward in rewards_list:
-        pygame.draw.circle(window, (255, 0, 0), (reward[0] + grid_size // 2, reward[1] + grid_size // 2), grid_size // 4)
+    def generate_rewards(self):
+        ''' This method generates random rewards within the grid '''
+        grid_size = self.size // self.rows
+        rewards_list = []
+        for _ in range(self.num_rewards):
+            x = random.randint(0, self.rows - 1) * grid_size
+            y = random.randint(0, self.rows - 1) * grid_size
+            rewards_list.append((x, y))
+        return rewards_list
 
-''' This function is used to regenerate the environment '''
-def redraw(window, size, rows, rewards_list):
-    window.fill((0, 0, 0))
-    draw_grid(window, size, rows, rewards_list)
-    pygame.display.update()
+    def draw_grid(self):
+        ''' This method uses pygame to generate the environment for the agent '''
+        grid_size = self.size // self.rows
+        for i in range(self.rows + 1):
+            pygame.draw.line(self.window, (255, 255, 255), (i * grid_size, 0), (i * grid_size, self.size))
+            pygame.draw.line(self.window, (255, 255, 255), (0, i * grid_size), (self.size, i * grid_size))
+        for reward in self.rewards_list:
+            pygame.draw.circle(self.window, (255, 0, 0), (reward[0] + grid_size // 2, reward[1] + grid_size // 2), grid_size // 4)
+        self.agent.draw(self.window)
 
-''' This function is used to set the details and create the environment '''
-def environment():
-    pygame.init()
-    size = 500
-    rows = 20
-    num_rewards = 10
-    window = pygame.display.set_mode((size, size))
-    pygame.display.set_caption("Environment")
-    rewards_list = generate_rewards(size, rows, num_rewards)
+    def redraw(self):
+        ''' This method is used to regenerate the environment '''
+        self.window.fill((0, 0, 0))
+        self.draw_grid()
+        pygame.display.update()
 
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-        
-        redraw(window, size, rows, rewards_list)
+    def run(self):
+        ''' This method sets up and runs the game loop '''
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.agent.move('up')
+                    elif event.key == pygame.K_DOWN:
+                        self.agent.move('down')
+                    elif event.key == pygame.K_LEFT:
+                        self.agent.move('left')
+                    elif event.key == pygame.K_RIGHT:
+                        self.agent.move('right')
+            self.redraw()
 
-environment()  # running environment
+env = Environment(500, 20, 10)
+env.run()
