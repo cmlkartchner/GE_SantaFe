@@ -144,15 +144,10 @@ class Grid:
     def add_food_specific_map(self, food_map):
         # build a specific map
         # given a string
-
         rows = food_map.split("\n")
         rows = [row.strip() for row in rows if row.strip() != ""]
-        print(rows)
         self.width = len(rows[0])
         self.height = len(rows)
-        print("width", self.width, "height", self.height)
-
-
         for i in range(len(rows)):
             print("the length of this row is ", len(rows[i]))
             for j in range(len(rows[i])):
