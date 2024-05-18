@@ -1,7 +1,8 @@
 from ge_utils import Gene
 import random
-from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES
+from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID
 from constants import NORTH, EAST, SOUTH, WEST
+
 
 class Agent:
     def __init__(self, grid) -> None:
@@ -109,12 +110,12 @@ class Food:
         return "F"
 class Grid:
     FOOD_NUM = 89
-    OBSTACLE_PROB = 0
     def __init__(self, width, height) -> None:
         self.width = width
         self.height = height
         self.array = [[None for _ in range(width)] for _ in range(height)]
-        self.add_food_and_obstacles(self.FOOD_NUM, self.OBSTACLE_PROB)
+        self.add_food_specific_map(THE_GRID)
+        #self.add_food_random(self.FOOD_NUM)
         self.history = {} # key: agent, value: set of positions agent has visited 
 
     def update_history(self, agent, position):
@@ -128,16 +129,9 @@ class Grid:
             return True
         return False
     
-    def add_food_and_obstacles(self, food_num, obstacle_prob):
+    def add_food_random(self, food_num):
         # add obstacles first so that they can't overwrite food
         # pick food_num spots and insert food
-
-        # add obstacles
-        for i in range(self.width):
-            for j in range(self.height):
-                if random.random() < obstacle_prob:
-                    obstacle = Obstacle(i,j)
-                    self.array[obstacle.position[1]][obstacle.position[0]] = obstacle
 
         # add food
         while food_num > 0:
@@ -147,6 +141,26 @@ class Grid:
                 self.array[y][x] = Food(x, y)
                 food_num -= 1
     
+    def add_food_specific_map(self, food_map):
+        # build a specific map
+        # given a string
+
+        rows = food_map.split("\n")
+        rows = [row.strip() for row in rows if row.strip() != ""]
+        print(rows)
+        self.width = len(rows[0])
+        self.height = len(rows)
+        print("width", self.width, "height", self.height)
+
+
+        for i in range(len(rows)):
+            print("the length of this row is ", len(rows[i]))
+            for j in range(len(rows[i])):
+                if rows[i][j] == "#":
+                    print("start at row", i, "col", j, " So I put at x=", j, " y=", i )
+                    self.array[i][j] = Food(j, i)
+
+
     def color(self, item):
         return "\x1b[33m" + str(item) +"\x1b[0m"
     
@@ -188,41 +202,9 @@ if __name__ == "__main__":
     a.phenotype = "prog3(move, left, move)"
     #"prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))"
     #"prog3(move, prog2(move, if_food_ahead(right,left)),move)"
-    a.run_phenotype(a.phenotype)
-    print("done running")
-    grid.print_history(a)
+    # a.run_phenotype(a.phenotype)
+    # print("done running")
+    # grid.print_history(a)
 
+    
 
-
-# S###............................
-# ...#............................
-# ...#.....................###....
-# ...#....................#....#..
-# ...#....................#....#..
-# ...####.#####........##.........
-# ............#................#..
-# ............#.......#...........
-# ............#.......#........#..
-# ............#.......#...........
-# ....................#...........
-# ............#................#..
-# ............#...................
-# ............#.......#.....###...
-# ............#.......#..#........
-# .................#..............
-# ................................
-# ............#...........#.......
-# ............#...#..........#....
-# ............#...#...............
-# ............#...#...............
-# ............#...#.........#.....
-# ............#..........#........
-# ............#...................
-# ...##. .#####....#...............
-# .#..............#...............
-# .#..............#...............
-# .#......#######.................
-# .#.....#........................
-# .......#........................
-# ..####..........................
-# ................................
