@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 
+''' This function is used to generate random rewards within the grid '''
 def generate_rewards(size, rows, num_rewards):
     grid_size = size // rows
     rewards_list = []
@@ -11,6 +12,7 @@ def generate_rewards(size, rows, num_rewards):
         rewards_list.append((x, y))
     return rewards_list
 
+''' This function is used to use pygame and generate the environment for the agent '''
 def draw_grid(window, size, rows, rewards_list):
     grid_size = size // rows
     for i in range(rows + 1):
@@ -19,11 +21,13 @@ def draw_grid(window, size, rows, rewards_list):
     for reward in rewards_list:
         pygame.draw.circle(window, (255, 0, 0), (reward[0] + grid_size // 2, reward[1] + grid_size // 2), grid_size // 4)
 
+''' This function is used to regenerate the environment '''
 def redraw(window, size, rows, rewards_list):
     window.fill((0, 0, 0))
     draw_grid(window, size, rows, rewards_list)
     pygame.display.update()
 
+''' This function is used to set the details and create the environment '''
 def environment():
     pygame.init()
     size = 500
