@@ -17,10 +17,17 @@ class Environment:
         ''' This method generates random rewards within the grid '''
         grid_size = self.size // self.rows
         rewards_list = []
-        for _ in range(self.num_rewards):
+        occupied_positions = set()
+        # for _ in range(self.num_rewards):
+        #     x = random.randint(0, self.rows - 1) * grid_size
+        #     y = random.randint(0, self.rows - 1) * grid_size
+        #     rewards_list.append((x, y))
+        while len(rewards_list) < 89:
             x = random.randint(0, self.rows - 1) * grid_size
             y = random.randint(0, self.rows - 1) * grid_size
-            rewards_list.append((x, y))
+            if (x, y) not in occupied_positions:
+                rewards_list.append((x, y))
+                occupied_positions.add((x, y))
         return rewards_list
 
     def draw_grid(self):
@@ -58,5 +65,5 @@ class Environment:
                         self.agent.move('right')
             self.redraw()
 
-env = Environment(500, 20, 10)
+env = Environment(640, 32, 10)
 env.run()

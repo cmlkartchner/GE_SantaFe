@@ -3,11 +3,12 @@ import pygame
 
 ''' TODO: 
         - agent is responding to keybaord commands (moves with arrows)
-        - remove the feature and implement the algorithm
+        - remove the keyboard move feature and implement allowed moves
         - study more about fitness and how that impacts the agent's performance
 '''
 
 class Agent:
+    ''' Moves that can be performed by agent: move left, move right, move ahead '''
     def __init__(self, size, rows):
         self.size = size
         self.rows = rows
