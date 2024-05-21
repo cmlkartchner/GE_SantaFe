@@ -56,7 +56,10 @@ def parse_expression(rules, expression, gene, terminal_string):
                 return terminal_string
             # decide on production rule
             productions = rules.get(non_terminal)
-            production = productions[gene.get_codon() % len(productions)]
+            if productions:
+                production = productions[gene.get_codon() % len(productions)]
+            else:
+                return "ERROR"
 
             # substitute the non-terminal with the decided on production
             terminal_string = re.sub(non_terminal, production, terminal_string, 1)
