@@ -57,6 +57,7 @@ class SantaFe_Agent:
         self.neighbors = None
         self.num_food_eaten = 0
         self.trail_food_eaten = [[0 for j in range(WORLD_SIZE)] for i in range(WORLD_SIZE)]
+        self.id = id
 
     ### GRAMMAR TERMINALS ###
     def left(self):
