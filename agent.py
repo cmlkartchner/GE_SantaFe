@@ -25,22 +25,20 @@ class Agent:
         self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
 
         self.index = 0
+        self.func = None
+        # parsed list of functions representing the current phenotype
 
     # functions from the grammar
     def prog2(self, progs1, progs2):
-        print("prog2 with arguments", progs1, progs2)
-        # if callable(progs1): # case where prog2 was INSIDE a if_food_ahead
-        #     progs1()
-        # if callable(progs2):
-        #     progs2()
+        print("prog2 with arguments")
+        progs1()
+        progs2()
+
     def prog3(self, progs1, progs2, progs3):
-        print("prog3 with arguments", progs1, progs2, progs3)
-        # if callable(progs1): # case where prog3 was INSIDE a if_food_ahead (which cannot have function calls)
-        #     progs1()
-        # if callable(progs2):
-        #     progs2()
-        # if callable(progs3):
-        #     progs3()
+        print("prog3 with arguments")
+        progs1()
+        progs2()
+        progs3()
 
     def food_ahead(self):
         # check if there is food in front of the agent
@@ -88,23 +86,14 @@ class Agent:
         # self.grid.update_history(self, self.position)
         # self.distance += 1
 
-
-
-
-
     def if_food_ahead(self, arg1, arg2):
-
-        # if_food_ahead(if_food_ahead(move,move),if_food_ahead(left,prog2(move,move)))
         print("if food ahead with arguments")
-        # if self.food_ahead() and callable(arg1):
-        #     arg1()
-        # elif callable(arg2):
-        #     arg2()
-        
-        #print(arg2)
-        # if the one is not callable then that means it was already called and evaluted to none
-        # so no need to do anything extra
-        # example case: if_food_ahead(left,prog2(move,move))
+        if self.food_ahead():
+            print("yes food")
+            arg1()
+        else:
+            print("no food")
+            arg2()
 
     # functions for ending the simulation
     def should_end(self):
@@ -113,85 +102,76 @@ class Agent:
         return False
     def end(self):
         raise EndException("End of simulation")
-    
 
+    def append_lambda(self, args, arguments, type): # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
+        # Capture current values of arguments[0] and arguments[1]
+        arg1, arg2 = arguments[0], arguments[1]
+        if type == "if_food_ahead":
+            args.append(lambda: self.if_food_ahead(arg1, arg2))
+        elif type == "prog2":
+            args.append(lambda: self.prog2(arg1, arg2))
+        elif type == "prog3":
+            arg3 = arguments[2]
+            args.append(lambda: self.prog3(arg1, arg2, arg3))
 
     def get_arg(self, num_args): # returns a list of lambda functions
         # starting at index
-        prog3 = self.prog3
-        prog2 = self.prog2
-        left = self.left
-        right = self.right
-        move = self.move
-        if_food_ahead = self.if_food_ahead
-
-        move = lambda: move()
-        left = lambda: left()
-        right = lambda: right()
-
-        #num_args = 2 # imagine we reached a if_food ahead and the first arg is if_food_ahead
-        #woops it is using the wrong index....num_args 
-
-        func = ["if_food_ahead", "move", "prog2", "left", "right", "prog3", "if_food_ahead", "move", "left", "right", "right"]
         args = [] # holds num_args lambda functions
         while num_args > 0:
-            if func[self.index] in ["move", "left", "right"]:
-                if func[self.index] == "move":
-                    args.append("lambda : move()")
-                    #args.append(move)
-                elif func[self.index] == "left":
-                    args.append("lambda : left()")
-                    #args.append(left)
-                elif func[self.index] == "right":
-                    args.append("lambda : right()")
-                    #args.append(right)
+            if self.func[self.index] in ["move", "left", "right"]:
+                if self.func[self.index] == "move":
+                    args.append(lambda: self.move())
+                elif self.func[self.index] == "left":
+                    args.append(lambda: self.left())
+                elif self.func[self.index] == "right":
+                    args.append(lambda: self.right())
                 self.index+=1
 
-            elif func[self.index] == "if_food_ahead":
+            elif self.func[self.index] == "if_food_ahead":
                 self.index+=1
-                # goal: 2 lambda functions to pass in
                 arguments = self.get_arg(2)
-                #print(arguments)
-                #print("lambda: if_food_ahead(", arguments[0], arguments[1], ")")
-                args.append(f"lambda : if_food_ahead({arguments[0]}, {arguments[1]})")
-                #args.append(lambda : if_food_ahead(arguments[0], arguments[1]))
+                self.append_lambda(args, arguments, "if_food_ahead")
 
-            elif func[self.index] == "prog2":
+            elif self.func[self.index] == "prog2":
                 self.index+=1
-                # goal: 2 lambda functions to pass in
-
                 arguments = self.get_arg(2)
-                args.append(f"lambda : prog2({arguments[0]}, {arguments[1]})")
+                self.append_lambda(args, arguments, "prog2")
             
-            elif func[self.index] == "prog3":
+            elif self.func[self.index] == "prog3":
                 self.index+=1
-                # goal: 3 lambda functions to pass in
-                
                 arguments = self.get_arg(3)
-                #print(arguments)
-                #print("lambda: prog3(", arguments[0], arguments[1], arguments[2], ")")
-                #args.append(lambda : prog3(arguments[0], arguments[1], arguments[2]))
-                args.append(f"lambda : prog3({arguments[0]}, {arguments[1]})")
-            
+                self.append_lambda(args, arguments, "prog3")
             else:
                 print("Error: function not found")
-            
             num_args -= 1
         
         return args
+    
+    def parse_phenotype(self):
+        # parse the phenotype into a list of functions to call get_args on
+        print("starting phenotype", self.phenotype)
+        print(self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split())
+        self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
                 
-    def run_phenotype(self, phenotype):
-        # TODO: 
-        prog3 = self.prog3
-        prog2 = self.prog2
+    def run_phenotype(self, phenotype): 
         left = self.left
         right = self.right
         move = self.move
-        if_food_ahead = self.if_food_ahead
+        self.parse_phenotype() # set self.func
+        self.index = 1 # skip the first function
 
-
+        if self.func[0] == "if_food_ahead":
+            starting_functions = a.get_arg(2)
+            self.if_food_ahead(starting_functions[0], starting_functions[1])
+        elif self.func[0] == "prog2":
+            starting_functions = a.get_arg(2)
+            self.prog2(starting_functions[0], starting_functions[1])
+        elif self.func[0] == "prog3":
+            starting_functions = a.get_arg(3)
+            self.prog3(starting_functions[0], starting_functions[1], starting_functions[2])
+        else:
+            eval(self.func[0]) # it's a function that takes no inputs
         
-    
     def __str__(self) -> str:
         return "A"
 
@@ -287,14 +267,4 @@ if __name__ == "__main__":
     a = Agent(grid)
     grid.print_grid()
     a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
-    # a.run_phenotype(a.phenotype)
-    
-    #"prog3(if_food_ahead(left,right),right,prog3(prog2(move,prog2(right,move)),left,right))"
-    #"prog3(move, prog2(move, if_food_ahead(right,left)),move)"
-    #print(a.get_arg(0, 2))
-    functions = a.get_arg(2)
-    #eval(a.get_arg(0, 2))
-    print(functions)
-    # for func in functions:
-    #     func()
-
+    a.run_phenotype(a.phenotype)
