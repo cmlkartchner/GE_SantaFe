@@ -20,6 +20,7 @@ def write_fitness_to_file(population):
             f.write(str(round(agent.gene.cost, 4)) + ", ")
         f.write("\n")
 
+#NOT IN USE..potentially to add in threading at another time
 def thread_routine(agent, evolve_manager):
     agent.run_phenotype(agent.phenotype)
     print("run")
@@ -42,24 +43,15 @@ def evolve():
     grid.print_grid()
     time.sleep(1)
     for i in range(300): # generations
-        #for agent in evolve_manager.population:
+        for agent in evolve_manager.population:
+            agent.run_phenotype(agent.phenotype) # run program 
+            evolve_manager.sense(agent) # sample neighbors
+            new_gene = evolve_manager.act(agent) # returns best gene produced
+            agent.gene = evolve_manager.update(agent.gene, new_gene) # update gene if better
 
-        MAX_THREADS = len(evolve_manager.population) # Number of threads to use
-        # Create a ThreadPoolExecutor
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
-            futures = [] # Create a list to store the futures
-            #for genome in population:
-            i=0
-            for agent in evolve_manager.population:
-                if True: # ALTER to not run agent if same as prev...check
-                    # Submit the task to the executor
-                    print("submitting future ", i)
-                    future = executor.submit(thread_routine, agent, evolve_manager)
-                    print("future completed ", i)
-                    futures.append(future) # Append the future object to the list
-                    i+=1
-            # Wait for all tasks to complete
-            concurrent.futures.wait(futures)
+            agent.phenotype = agent.gene.generate_phenotype(RULES, "<code>") # generate in case it changed
+
+        # sort population based on updated costs
         evolve_manager.population = sorted(evolve_manager.population, reverse=True, key=lambda x: x.gene.cost)
         write_fitness_to_file(evolve_manager.population)
         

@@ -25,17 +25,15 @@ class Agent:
         self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
 
         self.index = 0
-        self.func = None
-        # parsed list of functions representing the current phenotype
+        self.func = None # parsed list of functions representing the current phenotype
+        self.terminal_functions_run = 0
 
     # functions from the grammar
     def prog2(self, progs1, progs2):
-        print("prog2 with arguments")
         progs1()
         progs2()
 
     def prog3(self, progs1, progs2, progs3):
-        print("prog3 with arguments")
         progs1()
         progs2()
         progs3()
@@ -52,52 +50,46 @@ class Agent:
             return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
 
     def left(self):
-        print("lEft")
-        # if self.should_end():
-        #     self.end()
-        # self.moves+=1
-        # self.heading = (self.heading - 1) % 4
+        if self.should_end():
+            self.end()
+        self.moves+=1
+        self.heading = (self.heading - 1) % 4
     def right(self):
-        print("right")
-        # if self.should_end():
-        #     self.end()
-        # self.moves+=1
-        # self.heading = (self.heading + 1) % 4
+        if self.should_end():
+            self.end()
+        self.moves+=1
+        self.heading = (self.heading + 1) % 4
     def move(self):
-        print("MOVE")
-        # if self.should_end():
-        #     self.end()
-        # self.moves+=1
-        # prev_position = self.position
-        # if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
-        #     self.position = (self.position[0], self.position[1] - 1)
-        # elif self.heading == EAST and self.grid.in_bounds(self.position[0] + 1,self.position[1]):
-        #     self.position = (self.position[0] + 1, self.position[1])
-        # elif self.heading == SOUTH and self.grid.in_bounds(self.position[0],self.position[1] + 1):
-        #     self.position = (self.position[0], self.position[1] + 1)
-        # elif self.heading == WEST and self.grid.in_bounds(self.position[0] - 1,self.position[1]):
-        #     self.position = (self.position[0] - 1, self.position[1])
-        # else: # did not move
-        #     return
+        if self.should_end():
+            self.end()
+        self.moves+=1
+        if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
+            self.position = (self.position[0], self.position[1] - 1)
+        elif self.heading == EAST and self.grid.in_bounds(self.position[0] + 1,self.position[1]):
+            self.position = (self.position[0] + 1, self.position[1])
+        elif self.heading == SOUTH and self.grid.in_bounds(self.position[0],self.position[1] + 1):
+            self.position = (self.position[0], self.position[1] + 1)
+        elif self.heading == WEST and self.grid.in_bounds(self.position[0] - 1,self.position[1]):
+            self.position = (self.position[0] - 1, self.position[1])
+        else: # did not move
+            return
         
-        # # avoid double counting food
-        # if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
-        #     self.food_touched += 1
-        # self.grid.update_history(self, self.position)
-        # self.distance += 1
+        # avoid double counting food
+        if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
+            self.food_touched += 1
+        self.grid.update_history(self, self.position)
+        self.distance += 1
 
     def if_food_ahead(self, arg1, arg2):
-        print("if food ahead with arguments")
         if self.food_ahead():
-            print("yes food")
             arg1()
         else:
-            print("no food")
             arg2()
 
     # functions for ending the simulation
     def should_end(self):
-        if self.food_touched == FOOD_NUM or self.moves == 400:
+        self.terminal_functions_run += 1
+        if self.food_touched == FOOD_NUM or self.moves == 400 or self.terminal_functions_run == 30:
             return True
         return False
     def end(self):
@@ -149,29 +141,43 @@ class Agent:
     
     def parse_phenotype(self):
         # parse the phenotype into a list of functions to call get_args on
-        print("starting phenotype", self.phenotype)
-        print(self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split())
         self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
                 
-    def run_phenotype(self, phenotype): 
+    def run_phenotype(self, phenotype):
+        # repeatedly run the phenotype until the should_end is true
+        try:
+            self.moves = 0
+            self.food_touched = 0
+            self.distance = 0
+            self.times_program_ran = 0
+            while(True):
+                self.run_phenotype_once()
+        except EndException as e:
+            self.gene.cost = self.food_touched + self.distance / 100 
+    
+    def run_phenotype_once(self):
         left = self.left
         right = self.right
         move = self.move
-        self.parse_phenotype() # set self.func
+        self.parse_phenotype() # set self.func to parsed phenotype
         self.index = 1 # skip the first function
 
         if self.func[0] == "if_food_ahead":
-            starting_functions = a.get_arg(2)
+            starting_functions = self.get_arg(2)
             self.if_food_ahead(starting_functions[0], starting_functions[1])
         elif self.func[0] == "prog2":
-            starting_functions = a.get_arg(2)
+            starting_functions = self.get_arg(2)
             self.prog2(starting_functions[0], starting_functions[1])
         elif self.func[0] == "prog3":
-            starting_functions = a.get_arg(3)
+            starting_functions = self.get_arg(3)
             self.prog3(starting_functions[0], starting_functions[1], starting_functions[2])
-        else:
-            eval(self.func[0]) # it's a function that takes no inputs
-        
+        elif self.func[0] == "move":
+            self.move()
+        elif self.func[0] == "left":
+            self.left()
+        elif self.func[0] == "right":
+            self.right()
+
     def __str__(self) -> str:
         return "A"
 
@@ -264,7 +270,16 @@ if __name__ == "__main__":
     grid = Grid(GRID_WIDTH, GRID_HEIGHT)
     print("grid created")
 
-    a = Agent(grid)
-    grid.print_grid()
-    a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
-    a.run_phenotype(a.phenotype)
+    for i in range(50):
+        a = Agent(grid)
+        if "move" not in a.phenotype:
+            continue
+
+    #a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
+
+        print("the phenotype is ", a.phenotype)
+        a.run_phenotype(a.phenotype)
+        grid.print_history(a)
+        print("cost is ", a.gene.cost)
+        print("_____________________")
+    
