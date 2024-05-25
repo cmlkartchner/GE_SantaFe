@@ -5,14 +5,18 @@ from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 
 class Agent:
-    def __init__(self, grid) -> None:
+    def __init__(self, grid, gene=None, id=None) -> None:
         # cost information
         self.food_touched = 0 # no duplicates
         self.distance = 0 # how far it has traveled (not displacement)
         self.moves = 0 # how many actions: left, right, move
 
         # simulation information
-        self.id = random.randint(0, 1000000)
+        if id is None:
+            self.id = random.randint(0, 1000000)
+        else:
+            self.id = id
+
         self.heading = NORTH
         self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT)) # x,y BUT in the grid it is y,x
         self.grid = grid
@@ -21,7 +25,11 @@ class Agent:
 
         # genetic information
         self.memory = [] # contains multiple genes
-        self.gene = Gene([random.randint(0, 100) for i in range(GENE_LEN)])
+
+        if gene is None: # allow us to manually insert genes in order to 'test' random ones during act function
+            self.gene = Gene([random.randint(0, 100) for i in range(GENE_LEN)])
+        else:
+            self.gene = gene
         self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
 
         self.index = 0
@@ -76,12 +84,12 @@ class Agent:
             return
         
         # circular grid with no ending
-        if self.position[0] == GRID_WIDTH:
+        if self.position[0] >= GRID_WIDTH:
             self.position = (0, self.position[1])
         elif self.position[0] == -1:
             self.position = (GRID_WIDTH - 1, self.position[1])
         
-        if self.position[1] == GRID_HEIGHT:
+        if self.position[1] >= GRID_HEIGHT:
             self.position = (self.position[0], 0)
         elif self.position[1] == -1:
             self.position = (self.position[0], GRID_HEIGHT - 1)
@@ -154,7 +162,8 @@ class Agent:
     def parse_phenotype(self):
         # parse the phenotype into a list of functions to call get_args on
         self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
-                
+    
+    
     def run_phenotype(self, phenotype):
         # repeatedly run the phenotype until the should_end is true
         try:
@@ -167,6 +176,7 @@ class Agent:
         except EndException as e:
             self.gene.cost = self.food_touched + self.distance / 100 
     
+
     def run_phenotype_once(self):
         left = self.left
         right = self.right

@@ -26,7 +26,7 @@ NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-NUM_AGENTS = 25
+NUM_AGENTS = 15
 
 # grid constants
 GRID_WIDTH = 32

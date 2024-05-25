@@ -39,6 +39,12 @@ class Gene():
             self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
             self.current_codon = 0
         return expression
+ 
+    
+    def __str__(self) -> str:
+        if self.phenotype is None:
+            return "No phenotype"
+        return self.phenotype
 
 """
 A recursive function that evaluates non-terminals in a string in a

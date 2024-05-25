@@ -20,6 +20,14 @@ def write_fitness_to_file(population):
             f.write(str(round(agent.gene.cost, 4)) + ", ")
         f.write("\n")
 
+
+def write_phenotypes(population, i):
+    with open("phenotypes.txt", "a") as f:
+        f.write("Generation: " + str(i) + "\n")
+        for agent in population:
+            f.write(agent.phenotype + "\n")
+        f.write("\n")
+
 #NOT IN USE..potentially to add in threading at another time
 def thread_routine(agent, evolve_manager):
     agent.run_phenotype(agent.phenotype)
@@ -41,18 +49,19 @@ def evolve():
     grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid
     evolve_manager.generate_population(NUM_AGENTS, grid) # create population
     grid.print_grid()
-    time.sleep(1)
-    for i in range(300): # generations
+
+    for i in range(100): # generations
+        new_population = []
         for agent in evolve_manager.population:
             agent.run_phenotype(agent.phenotype) # run program 
             evolve_manager.sense(agent) # sample neighbors
-            new_gene = evolve_manager.act(agent) # returns best gene produced
-            agent.gene = evolve_manager.update(agent.gene, new_gene) # update gene if better
+            new_agent = evolve_manager.act(agent) # returns best gene produced
+            new_population.append(evolve_manager.update(agent, new_agent))
 
-            agent.phenotype = agent.gene.generate_phenotype(RULES, "<code>") # generate in case it changed
 
         # sort population based on updated costs
-        evolve_manager.population = sorted(evolve_manager.population, reverse=True, key=lambda x: x.gene.cost)
+        evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
+        write_phenotypes(evolve_manager.population, i)
         write_fitness_to_file(evolve_manager.population)
         
         if i % 20 == 0:

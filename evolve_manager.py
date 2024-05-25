@@ -2,14 +2,19 @@ import random
 from ge_utils import Gene, crossover
 from agent import Agent
 from constants import GENE_LEN, RULES
+import time
 # starting position of each agent should be randomized
 # use probability to figure out how many neighbors to sample
 
 class EvolveManager:
     def __init__(self) -> None:
         self.population = []
+        
     def generate_population(self, size, grid):
         self.population = [Agent(grid) for i in range(size)] # agent automatically generates initial genotype
+        self.temp_ids = [random.randint(0, 1000000) for i in range(size)]
+        print("the temp ids are: ", self.temp_ids)
+        time.sleep(1)
 
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
@@ -18,12 +23,11 @@ class EvolveManager:
         neighbors = random.sample(self.population, num_neighbors)
         agent.memory = [neighbor.gene for neighbor in neighbors]
     
-    ####!!!!!!!!!!!!!!!IMPORTANT: angent.memory or agent.gene.memory
     def act(self, agent):
         # add genotype
         # perform selection, crossover, mutation
         # evaluate fitness
-        # best genotype returned
+        # best agent (with their genotype) returned
         if len(agent.memory) == 0:
             return agent.gene
         agent.memory.append(agent.gene) #add agent's own gene
@@ -40,17 +44,39 @@ class EvolveManager:
             new_genes.extend(children)
             j += 1
         
-        # eval new population and return the best
-        for gene in new_genes:
-            gene.phenotype = gene.generate_phenotype(RULES, "<code>")
-        new_genes = sorted(new_genes, key=lambda x: x.cost)
-        return new_genes[0]
+        #concern:our history dictionary will get too full...we need to reuse the same temp ids
+        # create agents for each gene (necessary to evaluate gene)..best agent overrides current
+
+        # clear history dictionay for temp ids
+        for i in range(len(self.temp_ids)):
+            agent.grid.history[self.temp_ids[0]] = set()
+
+        temp_agents = []
+        for i in range(len(new_genes)):
+            temp_agents.append(Agent(agent.grid, gene=new_genes[i], id=self.temp_ids[i]))
+            temp_agents[i].run_phenotype(temp_agents[i].phenotype)
+
+        temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
+        return temp_agents[0]
         
-    def update(self, original_gene, new_gene):
+    def update(self, original_agent, new_agent):
         # given two genotypes, return the one with the higher cost
-        if original_gene.cost < new_gene.cost:
-            return new_gene
-        return original_gene
+        if original_agent.gene.cost < new_agent.gene.cost:
+            # if we are going to return new agent, change its id, and transfer its prev history over to newid
+            assert original_agent.grid == new_agent.grid
+            grid = original_agent.grid
+
+            new_id = random.randint(0, 1000000) # we must change id because the temp ids get their history cleared
+            grid.history[new_id] = set(grid.history[new_agent.id]) # transfer history
+            if len(original_agent.grid.history[new_id]) == 0:
+                print("what you haven't been nowhere")
+                time.sleep(1)
+
+            #print(original_agent.grid.history[new_id])
+            new_agent.id = new_id
+            grid.history[original_agent.id] = set()
+            return new_agent
+        return original_agent
     
     def selection_pair(self, genes):
         weights=[gene.cost for gene in genes]
