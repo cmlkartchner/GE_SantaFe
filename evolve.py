@@ -58,7 +58,6 @@ def evolve():
             new_agent = evolve_manager.act(agent) # returns best gene produced
             new_population.append(evolve_manager.update(agent, new_agent))
 
-
         # sort population based on updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
         write_phenotypes(evolve_manager.population, i)

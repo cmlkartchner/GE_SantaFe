@@ -13,8 +13,6 @@ class EvolveManager:
     def generate_population(self, size, grid):
         self.population = [Agent(grid) for i in range(size)] # agent automatically generates initial genotype
         self.temp_ids = [random.randint(0, 1000000) for i in range(size)]
-        print("the temp ids are: ", self.temp_ids)
-        time.sleep(1)
 
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
@@ -31,7 +29,7 @@ class EvolveManager:
         if len(agent.memory) == 0:
             return agent.gene
         agent.memory.append(agent.gene) #add agent's own gene
-        sorted_genes = sorted(agent.memory, key=lambda x: x.cost)
+        sorted_genes = sorted(agent.memory, key=lambda x: x.cost, reverse=True)
 
         new_genes = sorted_genes[:2] # keep the top 2 automatically
 
@@ -68,12 +66,8 @@ class EvolveManager:
 
             new_id = random.randint(0, 1000000) # we must change id because the temp ids get their history cleared
             grid.history[new_id] = set(grid.history[new_agent.id]) # transfer history
-            if len(original_agent.grid.history[new_id]) == 0:
-                print("what you haven't been nowhere")
-                time.sleep(1)
-
-            #print(original_agent.grid.history[new_id])
             new_agent.id = new_id
+            
             grid.history[original_agent.id] = set()
             return new_agent
         return original_agent
