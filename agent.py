@@ -63,17 +63,29 @@ class Agent:
         if self.should_end():
             self.end()
         self.moves+=1
-        if self.heading == NORTH and self.grid.in_bounds(self.position[0],self.position[1] - 1):
+
+        if self.heading == NORTH:
             self.position = (self.position[0], self.position[1] - 1)
-        elif self.heading == EAST and self.grid.in_bounds(self.position[0] + 1,self.position[1]):
+        elif self.heading == EAST:
             self.position = (self.position[0] + 1, self.position[1])
-        elif self.heading == SOUTH and self.grid.in_bounds(self.position[0],self.position[1] + 1):
+        elif self.heading == SOUTH:
             self.position = (self.position[0], self.position[1] + 1)
-        elif self.heading == WEST and self.grid.in_bounds(self.position[0] - 1,self.position[1]):
+        elif self.heading == WEST:
             self.position = (self.position[0] - 1, self.position[1])
         else: # did not move
             return
         
+        # circular grid with no ending
+        if self.position[0] == GRID_WIDTH:
+            self.position = (0, self.position[1])
+        elif self.position[0] == -1:
+            self.position = (GRID_WIDTH - 1, self.position[1])
+        
+        if self.position[1] == GRID_HEIGHT:
+            self.position = (self.position[0], 0)
+        elif self.position[1] == -1:
+            self.position = (self.position[0], GRID_HEIGHT - 1)
+
         # avoid double counting food
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
             self.food_touched += 1
@@ -89,7 +101,7 @@ class Agent:
     # functions for ending the simulation
     def should_end(self):
         self.terminal_functions_run += 1
-        if self.food_touched == FOOD_NUM or self.moves == 400 or self.terminal_functions_run == 30:
+        if self.food_touched == FOOD_NUM or self.moves == 400 or self.terminal_functions_run == 1000:
             return True
         return False
     def end(self):
@@ -149,7 +161,7 @@ class Agent:
             self.moves = 0
             self.food_touched = 0
             self.distance = 0
-            self.times_program_ran = 0
+            self.terminal_functions_run = 0
             while(True):
                 self.run_phenotype_once()
         except EndException as e:

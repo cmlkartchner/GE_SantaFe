@@ -16,8 +16,9 @@ class EvolveManager:
         # sample neighbors, take their genes
         num_neighbors = min(random.randint(1,10), len(self.population))
         neighbors = random.sample(self.population, num_neighbors)
-        agent.gene.memory = [neighbor.gene for neighbor in neighbors]
-        
+        agent.memory = [neighbor.gene for neighbor in neighbors]
+    
+    ####!!!!!!!!!!!!!!!IMPORTANT: angent.memory or agent.gene.memory
     def act(self, agent):
         # add genotype
         # perform selection, crossover, mutation
@@ -27,6 +28,7 @@ class EvolveManager:
             return agent.gene
         agent.memory.append(agent.gene) #add agent's own gene
         sorted_genes = sorted(agent.memory, key=lambda x: x.cost)
+
         new_genes = sorted_genes[:2] # keep the top 2 automatically
 
         j = 0
