@@ -167,6 +167,8 @@ class Agent:
     def run_phenotype(self, phenotype):
         # repeatedly run the phenotype until the should_end is true
         try:
+
+            self.grid.history[self.id] = set() # reset before running again
             self.moves = 0
             self.food_touched = 0
             self.distance = 0
