@@ -19,6 +19,7 @@ class Agent:
 
         self.heading = NORTH
         self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT)) # x,y BUT in the grid it is y,x
+        
         self.grid = grid
         
         self.grid.update_history(self, self.position) # init with starting position
@@ -177,6 +178,7 @@ class Agent:
                 self.run_phenotype_once()
         except EndException as e:
             self.gene.cost = self.food_touched + self.distance / 100 
+            #print("cost: ", self.phenotype, "->", self.gene.cost)
     
 
     def run_phenotype_once(self):

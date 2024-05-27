@@ -50,7 +50,7 @@ def evolve():
     evolve_manager.generate_population(NUM_AGENTS, grid) # create population
     grid.print_grid()
 
-    for i in range(100): # generations
+    for i in range(1000): # generations
         new_population = []
         for agent in evolve_manager.population:
             agent.run_phenotype(agent.phenotype) # run program 

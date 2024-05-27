@@ -3,6 +3,7 @@ import re
 from math import inf
 import random
 from constants import GENE_LEN
+import time
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -18,7 +19,7 @@ class Gene():
     def mutate(self):
         i = 0
         while i < len(self.genotype):
-            if np.random.random() > 0.8:
+            if np.random.random() > 0.5: # 50%
                 self.genotype[i] = np.random.randint(0, 100)
             i += 1
 
@@ -34,7 +35,7 @@ class Gene():
         while True:
             expression = start_symbol
             expression = parse_expression(rules, start_symbol, self, expression)
-            if "<" not in expression and ">" not in expression:
+            if "<" not in expression and ">" not in expression and "(" in expression: # ensure that is contains A function
                 break
             self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
             self.current_codon = 0
