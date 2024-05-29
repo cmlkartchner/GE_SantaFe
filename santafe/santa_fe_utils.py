@@ -56,6 +56,7 @@ class SantaFe_Agent:
         self.gene = gene
         self.neighbors = None
         self.num_food_eaten = 0
+        self.num_moves_taken = 0
         self.trail_food_eaten = [[0 for j in range(WORLD_SIZE)] for i in range(WORLD_SIZE)]
         self.id = id
 
@@ -99,6 +100,7 @@ class SantaFe_Agent:
             case Direction.WEST:
                 self.pos[0] = (self.x() + 1) % WORLD_SIZE
 
+        self.num_moves_taken += 1
         if self.world.get_trail_info(self.y(), self.x()) == "food":
             self.num_food_eaten += 1
             self.mark_trail()
@@ -121,13 +123,24 @@ class SantaFe_Agent:
             # select fit genotypes using tournament method; fitness is implicit in each neighbor's "num_food_eaten"
             parents = tournament_select(self.neighbors)
             # perform crossover on selected genotypes
-            child_gene1, child_gene2 = crossover(self.sim.get_agent_gene(parents[0].id), self.sim.get_agent_gene(parents[1].id)) # TODO: make this dynamic to fit POP_SIZE
+            child_genes = []
+            for i in range(len(parents)):
+                child_gene1, child_gene2 = single_pt_crossover(self.sim.get_agent_gene(parents[i].id),
+                                                     self.sim.get_agent_gene(parents[(i + 1) % len(parents)])) # wrap back around
+                child_genes.append(child_gene1)
+                child_genes.append(child_gene2)
             # mutate children
-            mutate(child_gene1, child_gene2)
-            # evaluate children
-            eval_fitness(SantaFe_Agent(random.choice(list(Direction)), random.randint(0, WORLD_SIZE - 1), random.randint(0, WORLD_SIZE - 1),
-                                       self.sim, child_gene1))
+            most_fit_child = self
+            for gene in child_genes:
+                mutate(gene)
+                # evaluate children
+                child = SantaFe_Agent(random.choice(list(Direction)), [random.randint(0, WORLD_SIZE - 1), random.randint(0, WORLD_SIZE - 1)],
+                                      self.world, self.sim, gene, self.id)
+                eval_fitness(child)
+                if child.num_food_eaten > most_fit_child.num_food_eaten:
+                    most_fit_child = child
             # return most fit child
+            return child
 
     def update(self):
         # UPDATE: if new genotype from act() is better than current genotype,
@@ -243,10 +256,10 @@ def tournament_select(agents):
         winners.append(most_fit_agent)
     return winners
 
-def crossover(parent_gene1: Gene, parent_gene2: Gene):
+def single_pt_crossover(parent_gene1: Gene, parent_gene2: Gene):
     if random.random() < CROSSOVER_PROB:
         crossover_point = random.randint(1, min(len(parent_gene1.genotype), len(parent_gene2.genotype)) - 2)
-        print(f"DEBUG Crossover index: {crossover_point}")
+        # print(f"DEBUG Crossover index: {crossover_point}")
         child_gene1 = parent_gene1.genotype[:crossover_point] + parent_gene2.genotype[crossover_point:]
         child_gene2 = parent_gene2.genotype[:crossover_point] + parent_gene1.genotype[crossover_point:]
     else:
@@ -259,7 +272,7 @@ def mutate(gene: Gene):
     for i in range(len(gene.genotype)):
         if random.random() < MUTATION_PROB:
             gene.genotype[i] = random.randint(0, 1000)
-            print("DEBUG: gene mutated")
+            # print("DEBUG: gene mutated")
             return
 
 ### ADDITIONAL TERMINALS/UTILS ###
