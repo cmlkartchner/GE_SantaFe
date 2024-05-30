@@ -26,12 +26,11 @@ class EvolveManager:
         # perform selection, crossover, mutation
         # evaluate fitness
         # best agent (with their genotype) returned
-        print(agent.id," has a cost of: ", agent.gene.cost)
+        #print(agent.id," has a cost of: ", agent.gene.cost)
         if len(agent.memory) == 0:
             return agent.gene
         agent.memory.append(agent.gene) #add agent's own gene
         sorted_genes = sorted(agent.memory, key=lambda x: x.cost, reverse=True)
-
         new_genes = sorted_genes[:2] # keep the top 2 automatically
 
         j = 0
@@ -43,7 +42,6 @@ class EvolveManager:
             new_genes.extend(children)
             j += 1
         
-        #concern:our history dictionary will get too full...we need to reuse the same temp ids
         # create agents for each gene (necessary to evaluate gene)..best agent overrides current
 
         # clear history dictionay for temp ids
@@ -51,6 +49,7 @@ class EvolveManager:
             agent.grid.history[self.temp_ids[0]] = set()
 
         temp_agents = []
+        #tempagent.append.....is changing the codon and genotype of agent's gene
         for i in range(min(len(self.temp_ids), len(new_genes))): # len of new_genes varies and could be higher than temp_ids
             temp_agents.append(Agent(agent.grid, gene=new_genes[i], id=self.temp_ids[i]))
             temp_agents[i].run_phenotype(temp_agents[i].phenotype)
@@ -62,7 +61,7 @@ class EvolveManager:
         # given two genotypes, return the one with the higher cost
         
         if original_agent.gene.cost < new_agent.gene.cost:
-            print(original_agent.id, "of cost", original_agent.gene.cost, " will be replaced with a gene of cost: ", new_agent.gene.cost)
+            #print(original_agent.id, "of cost", original_agent.gene.cost, " will be replaced with a gene of cost: ", new_agent.gene.cost)
             # if we are going to return new agent, change its id, and transfer its prev history over to newid
             assert original_agent.grid == new_agent.grid
             grid = original_agent.grid
@@ -73,7 +72,8 @@ class EvolveManager:
             
             grid.history[original_agent.id] = set()
             return new_agent
-        print(original_agent.id, " will NOT be changed", original_agent.gene.cost, new_agent.gene.cost)
+        
+        #print(original_agent.id, " will NOT be changed", original_agent.gene.cost, new_agent.gene.cost)
         return original_agent
     
     def selection_pair(self, genes):

@@ -3,7 +3,7 @@ import random
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM
 from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
-
+from copy import deepcopy
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:
         # cost information
@@ -31,7 +31,7 @@ class Agent:
         if gene is None: # allow us to manually insert genes in order to 'test' random ones during act function
             self.gene = Gene([random.randint(0, 100) for i in range(GENE_LEN)])
         else:
-            self.gene = gene
+            self.gene = deepcopy(gene)
         self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
 
         self.index = 0
