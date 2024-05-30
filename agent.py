@@ -165,8 +165,25 @@ class Agent:
         # parse the phenotype into a list of functions to call get_args on
         self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
     
+    def diversity(self, agent1_func, agent2_func):
+        # calculate the diversity between two agents
+        # number of differences in genotype
+        assert agent1_func != None, "Phenotype not parsed yet"
+        assert agent2_func != None, "Phenotype not parsed yet"
+
+        difference = abs(len(agent1_func) - len(agent2_func)) # difference in length
+        for i in range(min(len(agent1_func), len(agent2_func))):
+            if agent1_func[i] != agent2_func[i]:
+                difference += 1
+        return difference
     
-    def run_phenotype(self, phenotype):
+    def average_difference(self, population=None):
+        # compare agent with all the other agents and return its average difference, aka, DIVERSITY
+        if population is None:
+            return 0 # off switch for when you don't have a population to calculate against
+        return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
+    
+    def run_phenotype(self, population):
         # repeatedly run the phenotype until the should_end is true
         try:
             self.grid.history[self.id] = set() # reset before running again
@@ -178,10 +195,9 @@ class Agent:
             while(True):
                 self.run_phenotype_once()
         except EndException as e:
-            self.gene.cost = self.food_touched + self.distance / 100 
+            self.gene.cost = self.food_touched + self.distance / 100 + self.average_difference(population)/100
+            #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
-            
-    
 
     def run_phenotype_once(self):
         left = self.left
@@ -306,7 +322,7 @@ if __name__ == "__main__":
     # #a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
 
     #     print("the phenotype is ", a.phenotype)
-    #     a.run_phenotype(a.phenotype)
+    #     a.run_phenotype()
     #     grid.print_history(a)
     #     print("cost is ", a.gene.cost)
     #     print("_____________________")
@@ -316,6 +332,6 @@ if __name__ == "__main__":
     ideal = "if_food_ahead(move, prog2(left, if_food_ahead(move,prog3(right,right,if_food_ahead(move,prog3(move,left,move))))))"
     a = Agent(grid)
     a.phenotype = ideal
-    a.run_phenotype(a.phenotype)
+    a.run_phenotype()
     grid.print_history(a)
     

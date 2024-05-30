@@ -53,7 +53,7 @@ def evolve():
     for i in range(1000): # generations
         new_population = []
         for agent in evolve_manager.population:
-            agent.run_phenotype(agent.phenotype) # run program 
+            agent.run_phenotype(evolve_manager.population) # run program 
             evolve_manager.sense(agent) # sample neighbors
             new_agent = evolve_manager.act(agent) # returns best gene produced
             new_population.append(evolve_manager.update(agent, new_agent))
