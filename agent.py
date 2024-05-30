@@ -18,7 +18,8 @@ class Agent:
             self.id = id
 
         self.heading = NORTH
-        self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT)) # x,y BUT in the grid it is y,x
+        self.position = (0,0)
+        #(random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT)) # x,y BUT in the grid it is y,x
         
         self.grid = grid
         
@@ -168,17 +169,18 @@ class Agent:
     def run_phenotype(self, phenotype):
         # repeatedly run the phenotype until the should_end is true
         try:
-
             self.grid.history[self.id] = set() # reset before running again
             self.moves = 0
             self.food_touched = 0
             self.distance = 0
             self.terminal_functions_run = 0
+            self.position = (0,0)
             while(True):
                 self.run_phenotype_once()
         except EndException as e:
             self.gene.cost = self.food_touched + self.distance / 100 
-            #print("cost: ", self.phenotype, "->", self.gene.cost)
+            #print("cost: ", self.phenotype, "\n->", self.gene.cost)
+            
     
 
     def run_phenotype_once(self):
@@ -294,18 +296,26 @@ class Grid:
 
 if __name__ == "__main__":
     grid = Grid(GRID_WIDTH, GRID_HEIGHT)
-    print("grid created")
+    # print("grid created")
 
-    for i in range(50):
-        a = Agent(grid)
-        if "move" not in a.phenotype:
-            continue
+    # for i in range(50):
+    #     a = Agent(grid)
+    #     if "move" not in a.phenotype:
+    #         continue
 
-    #a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
+    # #a.phenotype = "if_food_ahead(move,if_food_ahead(left,prog2(move,left)))"
 
-        print("the phenotype is ", a.phenotype)
-        a.run_phenotype(a.phenotype)
-        grid.print_history(a)
-        print("cost is ", a.gene.cost)
-        print("_____________________")
+    #     print("the phenotype is ", a.phenotype)
+    #     a.run_phenotype(a.phenotype)
+    #     grid.print_history(a)
+    #     print("cost is ", a.gene.cost)
+    #     print("_____________________")
+
+    # ideal phenotype testing
+#"if_food_ahead(move, prog2(left, if_food_ahead(move,prog3(right,right,if_food_ahead(move,prog3(move,left,move))))))"
+    ideal = "if_food_ahead(move, prog2(left, if_food_ahead(move,prog3(right,right,if_food_ahead(move,prog3(move,left,move))))))"
+    a = Agent(grid)
+    a.phenotype = ideal
+    a.run_phenotype(a.phenotype)
+    grid.print_history(a)
     
