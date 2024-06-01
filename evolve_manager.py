@@ -32,8 +32,8 @@ class EvolveManager:
         new_genes = sorted_genes[:2] # keep the top 2 automatically
 
         j = 0
+        parents = self.selection_pair(agent.memory) # same two parents create children
         while j < len(agent.memory)/2 - 1:
-            parents = self.selection_pair(agent.memory)
             children = crossover(parents[0], parents[1])
             for child in children:
                 child.mutate()

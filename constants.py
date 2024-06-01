@@ -26,7 +26,7 @@ NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-NUM_AGENTS = 10
+NUM_AGENTS = 50
 DIVERSITY_CONSTANT = 2 # controls how much diversity affects fitness (lower = more effect)
 
 # grid constants
