@@ -179,6 +179,7 @@ class Agent:
     
     def average_difference(self, population=None):
         # compare agent with all the other agents and return its average difference, aka, DIVERSITY
+        # cannot be run until all agents are run
         if population is None:
             return 0 # off switch for when you don't have a population to calculate against
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
@@ -195,7 +196,7 @@ class Agent:
             while(True):
                 self.run_phenotype_once()
         except EndException as e:
-            self.gene.cost = self.food_touched + self.distance / 100 + self.average_difference(population)/100
+            self.gene.cost = self.food_touched + self.distance / 100
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
 
