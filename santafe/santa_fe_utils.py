@@ -207,7 +207,7 @@ class SantaFe_Sim:
         agents = []
         for i in range(NUM_AGENTS):
             direction = random.choice(list(Direction))
-            pos = [random.randint(0, WORLD_SIZE - 1), random.randint(0, WORLD_SIZE - 1)]
+            pos = self.world.trail_start
             gene = Gene(random.sample(range(1,1000), GENE_LEN))
             agents.append(SantaFe_Agent(direction, pos, self.world, self, gene, i))
             self.prev_state.update({i: gene})
@@ -255,6 +255,75 @@ def tournament_select(agents):
                 most_fit_agent = agent
         winners.append(most_fit_agent)
     return winners
+
+def nsga2_select(agents):
+    # Non-dominated sorting: sort into ranks based on who dominates who
+    sorted_fronts = nondomination_sort(agents)
+    # Calculate crowding distance
+    # Select population to go into a pareto tournament, higher rank will be more likely to win
+    # but greater crowding distance is favored within each rank (i.e. a tie-breaker)
+
+# make a solution class for non-domination sort specifically?
+class ParetoSolution:
+    def __init__(self, agent) -> None:
+        self.agent = agent
+        self.domination_count = 0
+        self.dominated_solutions = set()
+        self.rank = 0
+
+def nondomination_sort(agents):
+    # initialize list of solutions
+    solutions = []
+    for agent in agents:
+        solutions.append(ParetoSolution(agent))
+
+    fronts = []
+    first_front = []
+    # rank the solutions
+    for solution_i in solutions:
+        rank = 1
+        food_eaten = solution_i.agent.num_food_eaten
+        moves_taken = solution_i.agent.num_moves_taken
+        for solution_j in solutions:
+            if solution_i is solution_j:
+                continue
+            # if current_solution dominates agent.solution:
+            if food_eaten > solution_j.agent.num_food_eaten and moves_taken < solution_j.agent.num_moves_taken:
+                solution_i.dominated_solutions.add(solution_j)
+            # else if agent.solution dominates current_solution:
+            elif food_eaten < solution_j.agent.num_food_eaten and moves_taken > solution_j.agent.num_moves_taken:
+                solution_i.domination_count += 1
+        # if solution is not dominated by any other solution
+        if solution_i.domination_count == 0:
+            # add current_solution to first front
+            solution_i.rank = rank
+            first_front.append(solution_i)
+
+    # initialize front index to first front
+    front_rank = 1
+    fronts.append(first_front)
+    current_front = first_front
+    # populate the rest of the fronts
+    while len(current_front) > 0:
+        # initialize list for the next front
+        next_front = []
+        for solution in current_front:
+            # for each solution_j that is dominated by solution_i:
+            for dominated_solution in solution.dominated_solutions: # DEBUG: DOMINATED SOLUTIONS IS A LIST OF AGENTS
+                dominated_solution.domination_count -= 1
+                if dominated_solution.domination_count == 0:
+                    dominated_solution.rank = front_rank + 1
+                    next_front.append(dominated_solution)
+        # get next front
+        front_rank += 1
+        fronts.append(next_front)
+        current_front = next_front
+
+    # return the list of fronts
+    return fronts
+
+def calculate_crowding_dist(agents):
+    pass
 
 def single_pt_crossover(parent_gene1: Gene, parent_gene2: Gene):
     if random.random() < CROSSOVER_PROB:
