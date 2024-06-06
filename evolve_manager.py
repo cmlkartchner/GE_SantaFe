@@ -1,7 +1,7 @@
 import random
 from ge_utils import Gene, crossover
 from agent import Agent
-from constants import GENE_LEN, RULES
+from constants import GENE_LEN, RULES, NUM_COMPETITORS, SELECTION_PROPORTION
 import time
 # starting position of each agent should be randomized
 # use probability to figure out how many neighbors to sample
@@ -20,6 +20,15 @@ class EvolveManager:
         neighbors = random.sample(self.population, num_neighbors)
         agent.memory = [neighbor.gene for neighbor in neighbors]
     
+    def total_crossover(self, parents, num_children):
+        # do x number of crossover using the parents 
+        children = []
+        for i in range(int(num_children/2)):
+            parent1 = random.randint(0, len(parents)-1)
+            parent2 = random.randint(0, len(parents)-1)
+            children.extend(crossover(parents[parent1], parents[parent2]))
+        return children
+
     def act(self, agent):
         # add genotype
         # perform selection, crossover, mutation
@@ -30,11 +39,12 @@ class EvolveManager:
         agent.memory.append(agent.gene) #add agent's own gene
         sorted_genes = sorted(agent.memory, key=lambda x: x.cost, reverse=True)
         new_genes = sorted_genes[:2] # keep the top 2 automatically
-
         j = 0
-        parents = self.selection_pair(agent.memory) # same two parents create children
+
+        parents = self.tournament_selection(agent.memory) # tournament selection
         while j < len(agent.memory)/2 - 1:
-            children = crossover(parents[0], parents[1])
+            num_children = SELECTION_PROPORTION * len(agent.memory) - len(new_genes)
+            children = self.total_crossover(parents, num_children) 
             for child in children:
                 child.mutate()
             new_genes.extend(children)
@@ -74,3 +84,20 @@ class EvolveManager:
         if sum(weights) <= 0:
             return random.choices(genes, k=2)
         return random.choices(genes, weights=weights, k=2)
+    
+
+    def tournament_selection(self, genes): 
+        # returns the list of winners
+        # sample k competitors, return the one with the highest cost
+        parents = []
+        weights=[gene.cost for gene in genes]
+        for i in range(NUM_COMPETITORS):
+            if sum(weights) <= 0:
+                competitors = random.choices(genes, k=2)
+            else:
+                competitors = random.choices(genes, weights=weights, k=NUM_COMPETITORS) 
+            parents.append(max(competitors, key=lambda x: x.cost))
+        return parents[:]
+
+        
+        

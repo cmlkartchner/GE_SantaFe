@@ -1,6 +1,6 @@
 from ge_utils import Gene
 import random
-from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM
+from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_MOVES
 from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 from copy import deepcopy
@@ -19,7 +19,7 @@ class Agent:
 
         self.heading = NORTH
         self.position = (0,0)
-        #(random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT)) # x,y BUT in the grid it is y,x
+        #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
         
         self.grid = grid
         
@@ -111,7 +111,7 @@ class Agent:
     # functions for ending the simulation
     def should_end(self):
         self.terminal_functions_run += 1
-        if self.food_touched == FOOD_NUM or self.moves == 400 or self.terminal_functions_run == 1000:
+        if self.food_touched == FOOD_NUM or self.moves == NUM_MOVES or self.terminal_functions_run == 1000:
             return True
         return False
     def end(self):
@@ -193,10 +193,14 @@ class Agent:
             self.distance = 0
             self.terminal_functions_run = 0
             self.position = (0,0)
+            #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 self.run_phenotype_once()
         except EndException as e:
-            self.gene.cost = self.food_touched + self.distance / 100
+            # reward for food, punish for distance
+            self.gene.cost = self.food_touched - (self.distance * .05)
+            if self.food_touched == FOOD_NUM: # anyone who gets them all gets big reward
+                self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
 

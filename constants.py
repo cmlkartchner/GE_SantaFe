@@ -1,4 +1,4 @@
-GENE_LEN = 100 # length of the genotype
+GENE_LEN = 500 # length of the genotype
 RULES = {
         "<code>": ["<code>", "<progs>",],
         "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
@@ -19,7 +19,10 @@ RULES = {
 
 
 # evolve constants
-GENERATIONS = 100
+GENERATIONS = 500
+NUM_COMPETITORS = 5 # number of competitors used in tournament selection
+SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
+NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
 
 # agent constants
 NORTH = 0
@@ -28,6 +31,7 @@ SOUTH = 2
 WEST = 3
 NUM_AGENTS = 50
 DIVERSITY_CONSTANT = 2 # controls how much diversity affects fitness (lower = more effect)
+
 
 # grid constants
 GRID_WIDTH = 32
