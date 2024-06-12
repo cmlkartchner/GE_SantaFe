@@ -4,15 +4,15 @@ from agent import Agent, Food, Grid
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, NUM_AGENTS, DIVERSITY_CONSTANT, GENERATIONS
 from evolve_manager import EvolveManager
 import time
-import threading
-import concurrent.futures
 
+# write the fitness values of the population to a file
 def write_fitness_to_file(population):
     with open("fitness_values.txt", "a") as fd:
         for agent in population:
             fd.write(str(round(agent.gene.cost, 4)) + ", ")
         fd.write("\n")
 
+# write the phenotypes of the population to a file
 def write_phenotypes(population, i):
     with open("phenotypes.txt", "a") as fd:
         fd.write("Generation: " + str(i) + "\n")
@@ -21,22 +21,7 @@ def write_phenotypes(population, i):
             fd.flush()
         fd.write("\n")
 
-#NOT IN USE..potentially to add in threading at another time
-def thread_routine(agent, evolve_manager):
-    agent.run_phenotype(agent.phenotype)
-    print("run")
-    # run agent program 1 time, then do sense, act, update
-    evolve_manager.sense(agent)
-    new_gene = evolve_manager.act(agent) # returns best gene produced
-    print("act done")
-    agent.gene = evolve_manager.update(agent.gene, new_gene) # update gene if better
-
-    agent.phenotype = agent.gene.generate_phenotype(RULES, "<code>") # generate in case it changed
-    print("routine completed")
-# race conditions KT?
-# hmmm but an agent only updates it's gene once it is done, no agents ever deleted
-# each thread is only editing itself so they'll never edit the same thing at the same time
-
+# main evolution loop here
 def evolve():
     evolve_manager = EvolveManager()
     grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid

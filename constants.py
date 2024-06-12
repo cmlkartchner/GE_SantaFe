@@ -23,13 +23,15 @@ GENERATIONS = 500
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
 NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
+TOURNAMENT_SIZE = 5
+POP_SIZE = 3
 
 # agent constants
 NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-NUM_AGENTS = 50
+NUM_AGENTS = 100
 DIVERSITY_CONSTANT = 2 # controls how much diversity affects fitness (lower = more effect)
 
 
@@ -74,11 +76,9 @@ THE_GRID = """
 
 
 # TODO: figure out which constants are relevant
-# CACHE:                  True
 # CODON_SIZE:             100
 # CROSSOVER:              variable_onepoint
 # CROSSOVER_PROBABILITY:  0.9
-# DEBUG:                  False
 # GENERATIONS:	        1
 # MAX_GENOME_LENGTH:      500
 # GRAMMAR_FILE:           ..,santa_fe_trail.bnf
@@ -94,4 +94,3 @@ THE_GRID = """
 # SELECTION_PROPORTION:   0.3
 # TOURNAMENT_SIZE:        5
 # MUTATION_PROBABILITY:   0.01
-# VERBOSE:                False

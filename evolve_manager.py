@@ -1,10 +1,21 @@
+from math import inf
 import random
 from ge_utils import Gene, crossover
 from agent import Agent
-from constants import GENE_LEN, RULES, NUM_COMPETITORS, SELECTION_PROPORTION
+from constants import GENE_LEN, RULES, NUM_COMPETITORS, SELECTION_PROPORTION, TOURNAMENT_SIZE, POP_SIZE
 import time
-# starting position of each agent should be randomized
-# use probability to figure out how many neighbors to sample
+
+# ParetoSolution is exclusively for the NSGA-II functions included within EvolveManager
+# (A possible option for the act function)
+class ParetoSolution:
+    def __init__(self, agent) -> None:
+        self.agent = agent
+        self.domination_count = 0
+        self.dominated_solutions = set()
+        self.rank = 0
+        self.crowding_dist = 0
+
+# EvolveManager is the place for all the evolution functions used in evolve.py
 class EvolveManager:
     def __init__(self) -> None:
         self.population = []
@@ -98,6 +109,141 @@ class EvolveManager:
                 competitors = random.choices(genes, weights=weights, k=NUM_COMPETITORS) 
             parents.append(max(competitors, key=lambda x: x.cost))
         return parents[:]
+    
 
+    ####################################
+    def nsga2_select(self, agents):
+        # Non-dominated sorting: sort into ranks based on who dominates who
+        sorted_fronts, solution_lookup = self.nondomination_sort(agents)
+
+        # Calculate crowding distance
+        self.calculate_crowding_dist(agents, solution_lookup)
+
+        # Select population to go into a pareto tournament, higher rank will be more likely to win
+        # but greater crowding distance is favored within each rank (i.e. a tie-breaker)
+        winners = []
+        for i in range(POP_SIZE):
+            participants = random.sample(agents, TOURNAMENT_SIZE)
+            winners.append(self.pareto_tournament(participants, solution_lookup))
+        return winners
+
+    def nondomination_sort(self, agents):
+        # initialize list of solutions
+        solutions = []
+        solution_lookup = dict()
+        for agent in agents:
+            solution = ParetoSolution(agent)
+            solutions.append(solution)
+            solution_lookup.update({agent.id: solution})
+
+        fronts = []
+        first_front = []
+        # rank the solutions
+        for solution_i in solutions:
+            rank = 1
+            food_eaten = solution_i.agent.num_food_eaten
+            moves_taken = solution_i.agent.num_moves_taken
+            for solution_j in solutions:
+                if solution_i is solution_j:
+                    continue
+                # if current_solution dominates agent.solution:
+                if food_eaten > solution_j.agent.num_food_eaten and moves_taken < solution_j.agent.num_moves_taken:
+                    solution_i.dominated_solutions.add(solution_j)
+                # else if agent.solution dominates current_solution:
+                elif food_eaten < solution_j.agent.num_food_eaten and moves_taken > solution_j.agent.num_moves_taken:
+                    solution_i.domination_count += 1
+            # if solution is not dominated by any other solution
+            if solution_i.domination_count == 0:
+                # add current_solution to first front
+                solution_i.rank = rank
+                first_front.append(solution_i)
+
+        # initialize front index to first front
+        front_rank = 1
+        fronts.append(first_front)
+        current_front = first_front
+        # populate the rest of the fronts
+        while len(current_front) > 0:
+            # initialize list for the next front
+            next_front = []
+            for solution in current_front:
+                # for each solution_j that is dominated by solution_i:
+                for dominated_solution in solution.dominated_solutions:
+                    dominated_solution.domination_count -= 1
+                    if dominated_solution.domination_count == 0:
+                        dominated_solution.rank = front_rank + 1
+                        next_front.append(dominated_solution)
+            # get next front
+            front_rank += 1
+            fronts.append(next_front)
+            current_front = next_front
+
+            # return the list of fronts
+            return fronts, solution_lookup
+
+    # holds all NSGA-II related functions
+    def calculate_crowding_dist(self, agents, solution_lookup: dict):
+        # find the best performing and worst performing solution for each objective (sort the individuals again based on food eaten and moves taken)
+        food_eaten_sorted = sorted(agents, key=lambda x: x.num_food_eaten, reverse=False)
+        moves_taken_sorted = sorted(agents, key=lambda x: x.num_moves_taken, reverse=False)
+        agent_most_food = food_eaten_sorted[0]
+        agent_least_food = food_eaten_sorted[-1]
+        agent_most_moves = moves_taken_sorted[0] # the worst in moves
+        agent_least_moves = moves_taken_sorted[-1] # the best in moves
+
+        # set boundary agents to infinite distance
+        solution_lookup.get(agent_most_food.id).crowding_dist = inf
+        solution_lookup.get(agent_least_food.id).crowding_dist = inf
+        solution_lookup.get(agent_most_moves.id).crowding_dist = inf
+        solution_lookup.get(agent_least_moves.id).crowding_dist = inf
+
+        max_dist = 0
+        min_dist = inf
+        for agent in agents:
+            if agent is agent_most_food or agent is agent_least_food or agent is agent_most_moves or agent is agent_least_moves:
+                continue
+            # calculate normalized distance between food eaten and two nearest neighbors
+            agent_food_index = food_eaten_sorted.index(agent)
+            neighbor1 = food_eaten_sorted[agent_food_index - 1] # ate more
+            neighbor2 = food_eaten_sorted[agent_food_index + 1] # ate less
+            food_dist = neighbor1.num_food_eaten - neighbor2.num_food_eaten
+
+            # calculated normalized distance between moves taken and two nearest neighbors
+            agent_moves_index = moves_taken_sorted.index(agent)
+            neighbor1 = moves_taken_sorted[agent_moves_index - 1] # moved less
+            neighbor2 = moves_taken_sorted[agent_moves_index + 1] # moved more
+            moves_dist = neighbor2.num_moves_taken - neighbor1.num_moves_taken
+
+            # sum the distances
+            dist = food_dist + moves_dist
+            solution_lookup.get(agent.id).crowding_dist = dist
+            if dist > max_dist:
+                max_dist = dist
+            elif dist < min_dist:
+                min_dist = dist
         
-        
+        # normalize the crowding distances
+        norm_factor = max_dist - min_dist
+        for solution in solution_lookup.values():
+            solution.crowding_dist = (solution.crowding_dist - min_dist) / norm_factor
+
+    def pareto_tournament(self, agents, solution_lookup):
+        # given a population of agents:
+        winning_agent = agents[0]
+        winning_agent_solution = solution_lookup.get(winning_agent.id)
+        for agent in agents:
+            # if rank is higher than current winning agent, choose that one
+            if agent is winning_agent:
+                continue
+            agent_solution = solution_lookup.get(agent.id)
+            if agent_solution.rank < winning_agent_solution.rank:
+                winning_agent = agent
+                winning_agent_solution = agent_solution
+            # else if rank is same as current winning agent
+            elif agent_solution.rank == winning_agent_solution.rank:
+                # if crowding distance is smaller than the distance of the current winning agent, choose that one
+                if agent_solution.crowding_dist < winning_agent_solution.crowding_dist:
+                    winning_agent = agent
+                    winning_agent_solution = agent_solution
+        return winning_agent
+
