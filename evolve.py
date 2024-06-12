@@ -1,9 +1,11 @@
-from ge_utils import Gene
+from gene import Gene
 import random
 from agent import Agent, Food, Grid 
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, NUM_AGENTS, DIVERSITY_CONSTANT, GENERATIONS
 from evolve_manager import EvolveManager
 import time
+
+# master class: call python3 evolve.py to run
 
 # write the fitness values of the population to a file
 def write_fitness_to_file(population):
@@ -23,20 +25,21 @@ def write_phenotypes(population, i):
 
 # main evolution loop here
 def evolve():
-    evolve_manager = EvolveManager()
-    grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid
-    evolve_manager.generate_population(NUM_AGENTS, grid) # create population
+    evolve_manager = EvolveManager() # contains all the evolve functions
+    grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid for all agents to share
+    evolve_manager.generate_population(NUM_AGENTS, grid) # create population (stored within evolve_manager)
     grid.print_grid()
 
+    # clear the files
     with open ("phenotypes.txt", "w") as _, open("fitness_values.txt", "w") as _:
         print("files cleared and ready for writing")
 
-    for i in range(GENERATIONS): # generations
-        new_population = []
+    for i in range(GENERATIONS): # each iteration is a 'generation'
+        new_population = [] # new population to replace the old one
         for agent in evolve_manager.population:
             agent.run_phenotype(evolve_manager.population) # run program 
-            evolve_manager.sense(agent) # sample neighbors
-            new_agent = evolve_manager.act(agent) # returns best gene produced
+            evolve_manager.sense(agent) # sample genotypes from neighbors
+            new_agent = evolve_manager.act(agent) # mutate/crossover -> returns best gene produced
             new_population.append(evolve_manager.update(agent, new_agent))
 
         # compare diversity of the population (diversity metric of fitness function)

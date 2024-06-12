@@ -8,16 +8,6 @@ RULES = {
         "<op>" :["left","right","move"] 
     }
 
-
-# <prog> ::= <code>
-# <code> ::= <code> | <progs>
-# <progs>::= <condition> | <prog2> | <prog3> | <op>
-# <condition>::=if_food_ahead(<progs>,<progs>)
-# <prog2>::=prog2(<progs>,<progs>)
-# <prog3>::=prog3(<progs>,<progs>,<progs>)
-# <op>::=left|right|move
-
-
 # evolve constants
 GENERATIONS = 500
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection

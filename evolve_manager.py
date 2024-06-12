@@ -1,8 +1,8 @@
 from math import inf
 import random
-from ge_utils import Gene, crossover
+from gene import Gene
 from agent import Agent
-from constants import GENE_LEN, RULES, NUM_COMPETITORS, SELECTION_PROPORTION, TOURNAMENT_SIZE, POP_SIZE
+from constants import GENE_LEN, RULES, NUM_COMPETITORS, SELECTION_PROPORTION, TOURNAMENT_SIZE, POP_SIZE, DIVERSITY_CONSTANT
 import time
 
 # ParetoSolution is exclusively for the NSGA-II functions included within EvolveManager
@@ -37,7 +37,7 @@ class EvolveManager:
         for i in range(int(num_children/2)):
             parent1 = random.randint(0, len(parents)-1)
             parent2 = random.randint(0, len(parents)-1)
-            children.extend(crossover(parents[parent1], parents[parent2]))
+            children.extend(Gene.crossover(parents[parent1], parents[parent2]))
         return children
 
     def act(self, agent):
@@ -70,6 +70,12 @@ class EvolveManager:
         for i in range(min(len(self.temp_ids), len(new_genes))): # len of new_genes varies and could be higher than temp_ids
             temp_agents.append(Agent(agent.grid, gene=new_genes[i], id=self.temp_ids[i]))
             temp_agents[i].run_phenotype(temp_agents[i].phenotype)
+
+        # compare diversity of the population (diversity metric of fitness function)
+        for agent in temp_agents:
+            diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
+            agent.gene.cost += diff
+
 
         temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
         return temp_agents[0]

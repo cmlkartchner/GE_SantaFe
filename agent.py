@@ -1,44 +1,46 @@
-from ge_utils import Gene
+from gene import Gene
 import random
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_MOVES
 from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 from copy import deepcopy
+from grid_and_food import Grid, Food
+
+# Agent class: includes functions for running the phenotype, calculating diversity, and ending the simulation
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:
         # cost information
-        self.food_touched = 0 # no duplicates
-        self.distance = 0 # how far it has traveled (not displacement)
+        self.food_touched = 0 # (no food should be double counted)
+        self.distance = 0 # how far it has traveled (distance not displacement)
         self.moves = 0 # how many actions: left, right, move
 
-        # simulation information
+        # agent id: either set manually else set randomly
         if id is None:
             self.id = random.randint(0, 1000000)
         else:
             self.id = id
 
         self.heading = NORTH
-        self.position = (0,0)
+        self.position = (0,0) # currently we have every agent starting at the same location
         #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
         
-        self.grid = grid
-        
+        self.grid = grid # every agent is using the SAME grid object
         self.grid.update_history(self, self.position) # init with starting position
 
-        # genetic information
-        self.memory = [] # contains multiple genes
+        self.memory = [] # list to contain the gene objects of neighbors
 
-        if gene is None: # allow us to manually insert genes in order to 'test' random ones during act function
+        # gene: can either be inserted manually (for 'testing' genes during act function), else set randomly
+        if gene is None:
             self.gene = Gene([random.randint(0, 100) for i in range(GENE_LEN)])
         else:
             self.gene = deepcopy(gene)
-        self.phenotype = self.gene.generate_phenotype(RULES, "<code>")
+        self.phenotype = self.gene.generate_phenotype(RULES, "<code>") #generate string representation of program from grammar
 
-        self.index = 0
+        self.index = 0 # index of self.func
         self.func = None # parsed list of functions representing the current phenotype
         self.terminal_functions_run = 0
 
-    # functions from the grammar
+    # functions for running the phenotype once it has been generated and parsed by get_args
     def prog2(self, progs1, progs2):
         progs1()
         progs2()
@@ -82,10 +84,11 @@ class Agent:
             self.position = (self.position[0], self.position[1] + 1)
         elif self.heading == WEST:
             self.position = (self.position[0] - 1, self.position[1])
-        else: # did not move
+        else:
+            print("Error: heading not found")
             return
         
-        # circular grid with no ending
+        # circular grid with no end
         if self.position[0] >= GRID_WIDTH:
             self.position = (0, self.position[1])
         elif self.position[0] == -1:
@@ -96,7 +99,8 @@ class Agent:
         elif self.position[1] == -1:
             self.position = (self.position[0], GRID_HEIGHT - 1)
 
-        # avoid double counting food
+        # avoid double counting food (note: the grid is never edited, nor is the agent ever inserted into it.
+        # The agent just tracks its location in self.grid.history dictionary)
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
             self.food_touched += 1
         self.grid.update_history(self, self.position)
@@ -108,7 +112,7 @@ class Agent:
         else:
             arg2()
 
-    # functions for ending the simulation
+    # functions for ending the simulation (terminal_functions_run is probably useless)
     def should_end(self):
         self.terminal_functions_run += 1
         if self.food_touched == FOOD_NUM or self.moves == NUM_MOVES or self.terminal_functions_run == 1000:
@@ -117,16 +121,34 @@ class Agent:
     def end(self):
         raise EndException("End of simulation")
 
-    def append_lambda(self, args, arguments, type): # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
-        # Capture current values of arguments[0] and arguments[1]
-        arg1, arg2 = arguments[0], arguments[1]
-        if type == "if_food_ahead":
-            args.append(lambda: self.if_food_ahead(arg1, arg2))
-        elif type == "prog2":
-            args.append(lambda: self.prog2(arg1, arg2))
-        elif type == "prog3":
-            arg3 = arguments[2]
-            args.append(lambda: self.prog3(arg1, arg2, arg3))
+    ###################################################################################################
+    ####functions to taking the output of generate_phenotype and turning it into a runnable program####
+    def run_phenotype_once(self): # master function (calls all the other functions in this section)
+        left = self.left
+        right = self.right
+        move = self.move
+        self.parse_phenotype() # set self.func to parsed phenotype
+        self.index = 1 # skip the first function
+
+        if self.func[0] == "if_food_ahead":
+            starting_functions = self.get_arg(2)
+            self.if_food_ahead(starting_functions[0], starting_functions[1])
+        elif self.func[0] == "prog2":
+            starting_functions = self.get_arg(2)
+            self.prog2(starting_functions[0], starting_functions[1])
+        elif self.func[0] == "prog3":
+            starting_functions = self.get_arg(3)
+            self.prog3(starting_functions[0], starting_functions[1], starting_functions[2])
+        elif self.func[0] == "move":
+            self.move()
+        elif self.func[0] == "left":
+            self.left()
+        elif self.func[0] == "right":
+            self.right()
+    
+    def parse_phenotype(self):
+        # parse the phenotype into a list of functions to call get_args on
+        self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
 
     def get_arg(self, num_args): # returns a list of lambda functions
         # starting at index
@@ -161,10 +183,19 @@ class Agent:
         
         return args
     
-    def parse_phenotype(self):
-        # parse the phenotype into a list of functions to call get_args on
-        self.func = self.phenotype.replace("(", " ").replace(")", " ").replace(",", " ").split()
+    def append_lambda(self, args, arguments, type): # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
+        # Capture current values of arguments[0] and arguments[1]
+        arg1, arg2 = arguments[0], arguments[1]
+        if type == "if_food_ahead":
+            args.append(lambda: self.if_food_ahead(arg1, arg2))
+        elif type == "prog2":
+            args.append(lambda: self.prog2(arg1, arg2))
+        elif type == "prog3":
+            arg3 = arguments[2]
+            args.append(lambda: self.prog3(arg1, arg2, arg3))
     
+    ######End of functions for parsing/running program#############################################
+
     def diversity(self, agent1_func, agent2_func):
         # calculate the diversity between two agents
         # number of differences in genotype
@@ -204,116 +235,11 @@ class Agent:
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
 
-    def run_phenotype_once(self):
-        left = self.left
-        right = self.right
-        move = self.move
-        self.parse_phenotype() # set self.func to parsed phenotype
-        self.index = 1 # skip the first function
-
-        if self.func[0] == "if_food_ahead":
-            starting_functions = self.get_arg(2)
-            self.if_food_ahead(starting_functions[0], starting_functions[1])
-        elif self.func[0] == "prog2":
-            starting_functions = self.get_arg(2)
-            self.prog2(starting_functions[0], starting_functions[1])
-        elif self.func[0] == "prog3":
-            starting_functions = self.get_arg(3)
-            self.prog3(starting_functions[0], starting_functions[1], starting_functions[2])
-        elif self.func[0] == "move":
-            self.move()
-        elif self.func[0] == "left":
-            self.left()
-        elif self.func[0] == "right":
-            self.right()
-
     def __str__(self) -> str:
         return "A"
-
-###### EVOLUTION 
-
-class Food:
-    def __init__(self, x, y) -> None:
-        self.position = (x,y)
-    def __str__(self) -> str:
-        return "F"
-class Grid:
-    FOOD_NUM = 89
-    def __init__(self, width, height) -> None:
-        self.width = width
-        self.height = height
-        self.array = [[None for _ in range(width)] for _ in range(height)]
-        self.add_food_specific_map(THE_GRID)
-        #self.add_food_random(self.FOOD_NUM)
-        self.history = {} # key: agent, value: set of positions agent has visited 
-
-    def update_history(self, agent, position):
-        if agent.id in self.history:
-            self.history[agent.id].add(position)
-        else:
-            self.history[agent.id] = {position}
-
-    def in_bounds(self,x,y):
-        if self.width > x >= 0 and self.height > y >= 0:
-            return True
-        return False
-    
-    def add_food_random(self, food_num):
-        # add obstacles first so that they can't overwrite food
-        # pick food_num spots and insert food
-
-        # add food
-        while food_num > 0:
-            x = random.randint(0, self.width - 1)
-            y = random.randint(0, self.height - 1)
-            if self.array[y][x] is None:
-                self.array[y][x] = Food(x, y)
-                food_num -= 1
-    
-    def add_food_specific_map(self, food_map):
-        # build a specific map
-        # given a string
-        rows = food_map.split("\n")
-        rows = [row.strip() for row in rows if row.strip() != ""]
-        self.width = len(rows[0])
-        self.height = len(rows)
-        for i in range(len(rows)):
-            for j in range(len(rows[i])):
-                if rows[i][j] == "#":
-                    self.array[i][j] = Food(j, i)
-
-
-    def color(self, item):
-        return "\x1b[33m" + str(item) +"\x1b[0m"
-    
-    def print_grid(self): # if bold = True, an agent must be specified 
-        for row in self.array:
-            row_str = ""
-            for item in row:
-                if item is None:
-                    row_str += "."
-                else:
-                    row_str += str(item)
-            print(row_str)
-    
-    def print_history(self, agent):
-        positions = self.history[agent.id]
-        for i in range(self.height): # y
-            row_str = ""
-            for j in range(self.width): # x
-                if (j,i) in positions: # BOLD CASE
-                    if self.array[i][j] is None:
-                        row_str += self.color(".")
-                    else:
-                        row_str += self.color(self.array[i][j])
-
-                else: #Non-bold case
-                    if self.array[i][j] is None:
-                        row_str += "."
-                    else:
-                        row_str += str(self.array[i][j])
-            print(row_str)
         
+
+
 
 if __name__ == "__main__":
     grid = Grid(GRID_WIDTH, GRID_HEIGHT)
