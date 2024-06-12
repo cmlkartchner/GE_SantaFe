@@ -4,4 +4,5 @@ import CONST as CONST
 
 CurrHiveMind = HiveMind()
 CurrHiveMind.generateAgents(CONST.GENERATION_LIMIT)
-CurrHiveMind.printAgents()
+CurrHiveMind.printAgentIDs()
+# run and test sense 
