@@ -85,11 +85,11 @@ class EvolveManager:
             temp_agents.append(Agent(agent.grid, gene=new_genes[i], id=self.temp_ids[i]))
             temp_agents[i].run_phenotype(temp_agents[i].phenotype)
 
-        # compare diversity of the population (diversity metric of fitness function)
-        for agent in temp_agents:
-            diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
-
+        # compare diversity of the population (diversity metric of fitness function)c
+        Agent.apply_diversity(temp_agents)
+        # for agent in temp_agents:
+        #     diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
 
         temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
         return temp_agents[0]

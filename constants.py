@@ -23,7 +23,7 @@ SOUTH = 2
 WEST = 3
 NUM_AGENTS = 100
 DIVERSITY_CONSTANT = 4 # controls how much diversity affects fitness (lower = more effect)
-
+DIVERSITY_REWARD = 2 # fixed reward for diversity (a 2nd implementation of diversity)
 
 # grid constants
 GRID_WIDTH = 32

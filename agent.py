@@ -1,6 +1,6 @@
 from gene import Gene
 import random
-from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_MOVES
+from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_MOVES, DIVERSITY_REWARD
 from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 from copy import deepcopy
@@ -195,6 +195,23 @@ class Agent:
             args.append(lambda: self.prog3(arg1, arg2, arg3))
     
     ######End of functions for parsing/running program#############################################
+
+    def apply_diversity(population):
+        # another approach to diversity (using previous diversity functions)
+        # instead of rewarding all agents according to their difference to each other, 
+        # reward only the top 10% in diversity a fixed amount
+        if len(population) < 10:
+            top_num = 1
+        else:
+            top_num = len(population) // 10
+        average_differences = [agent.average_difference(population) for agent in population]
+
+        population_diff = zip(population, average_differences)
+        most_diverse = sorted(population_diff, key=lambda x: x[1], reverse=True)[:top_num]
+        most_diverse = [agent for agent, _ in most_diverse] # remove the average differences
+
+        for agent in most_diverse:
+            agent.gene.cost += DIVERSITY_REWARD
 
     def diversity(self, agent1_func, agent2_func):
         # calculate the diversity between two agents
