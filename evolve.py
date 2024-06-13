@@ -43,10 +43,10 @@ def evolve():
             new_population.append(evolve_manager.update(agent, new_agent))
 
         # compare diversity of the population (diversity metric of fitness function)
-        for agent in new_population:
-            diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
-            #print(agent.phenotype, "->", diff, "->", agent.gene.cost)
+        # for agent in new_population:
+        #     diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
+           
         # sort pop using updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
         write_phenotypes(evolve_manager.population, i)

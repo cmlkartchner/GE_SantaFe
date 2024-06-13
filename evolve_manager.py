@@ -26,10 +26,9 @@ class EvolveManager:
 
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
-        # sample neighbors, take their genes
+        # sample neighbors from the population
         num_neighbors = min(random.randint(1,10), len(self.population))
-        neighbors = random.sample(self.population, num_neighbors)
-        agent.memory = [neighbor.gene for neighbor in neighbors]
+        agent.memory = random.sample(self.population, num_neighbors)
     
     def total_crossover(self, parents, num_children):
         # do x number of crossover using the parents 
@@ -41,18 +40,22 @@ class EvolveManager:
         return children
 
     def act(self, agent):
-        # add genotype
+        # add genotype (the agent, which contains the genotype) to the memory list
         # perform selection, crossover, mutation
         # evaluate fitness
         # best agent (with their genotype) returned
         if len(agent.memory) == 0:
             return agent.gene
-        agent.memory.append(agent.gene) #add agent's own gene
-        sorted_genes = sorted(agent.memory, key=lambda x: x.cost, reverse=True)
-        new_genes = sorted_genes[:2] # keep the top 2 automatically
+        agent.memory.append(agent) #add agent's self
+
+        sorted_genes = sorted(agent.memory, key=lambda x: x.gene.cost, reverse=True)
+        new_genes = sorted_genes[:2] # keep the top 2 agents automatically
+        new_genes = [gene.gene for gene in new_genes] # only keep the genes
         j = 0
 
-        parents = self.tournament_selection(agent.memory) # tournament selection
+        #parents = self.tournament_selection(agent.memory) # tournament selection
+        parents = self.nsga2_select(agent.memory) # NSGA-II selection
+        parent_genes = [parent.gene for parent in parents] # below infrastructure requires genes, not agents
         while j < len(agent.memory)/2 - 1:
             num_children = SELECTION_PROPORTION * len(agent.memory) - len(new_genes)
             children = self.total_crossover(parents, num_children) 
@@ -72,9 +75,9 @@ class EvolveManager:
             temp_agents[i].run_phenotype(temp_agents[i].phenotype)
 
         # compare diversity of the population (diversity metric of fitness function)
-        for agent in temp_agents:
-            diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
+        # for agent in temp_agents:
+        #     diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
 
 
         temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
@@ -82,7 +85,6 @@ class EvolveManager:
         
     def update(self, original_agent, new_agent):
         # given two genotypes, return the one with the higher cost
-        
         if original_agent.gene.cost < new_agent.gene.cost:
             # if we are going to return new agent, change its id, and transfer its prev history over to newid
             assert original_agent.grid == new_agent.grid
@@ -117,26 +119,28 @@ class EvolveManager:
         return parents[:]
     
 
-    ####################################
+    ###########################################
+    # code for NSGA-II
     def nsga2_select(self, agents):
         # Non-dominated sorting: sort into ranks based on who dominates who
         sorted_fronts, solution_lookup = self.nondomination_sort(agents)
 
-        # Calculate crowding distance
+        # Calculate crowding distance (account for diversity in the population)
         self.calculate_crowding_dist(agents, solution_lookup)
 
         # Select population to go into a pareto tournament, higher rank will be more likely to win
         # but greater crowding distance is favored within each rank (i.e. a tie-breaker)
         winners = []
         for i in range(POP_SIZE):
+            print("num agnets", len(agents))
             participants = random.sample(agents, TOURNAMENT_SIZE)
             winners.append(self.pareto_tournament(participants, solution_lookup))
         return winners
 
     def nondomination_sort(self, agents):
-        # initialize list of solutions
+        # initialize list of solutions (solution = ParetoSolution object, basically an agent with some extra attributes)
         solutions = []
-        solution_lookup = dict()
+        solution_lookup = dict() # key: agent.id, value: ParetoSolution object
         for agent in agents:
             solution = ParetoSolution(agent)
             solutions.append(solution)
@@ -147,16 +151,16 @@ class EvolveManager:
         # rank the solutions
         for solution_i in solutions:
             rank = 1
-            food_eaten = solution_i.agent.num_food_eaten
-            moves_taken = solution_i.agent.num_moves_taken
+            food_eaten = solution_i.agent.food_touched
+            moves_taken = solution_i.agent.distance
             for solution_j in solutions:
                 if solution_i is solution_j:
                     continue
                 # if current_solution dominates agent.solution:
-                if food_eaten > solution_j.agent.num_food_eaten and moves_taken < solution_j.agent.num_moves_taken:
+                if food_eaten > solution_j.agent.food_touched and moves_taken < solution_j.agent.distance:
                     solution_i.dominated_solutions.add(solution_j)
                 # else if agent.solution dominates current_solution:
-                elif food_eaten < solution_j.agent.num_food_eaten and moves_taken > solution_j.agent.num_moves_taken:
+                elif food_eaten < solution_j.agent.food_touched and moves_taken > solution_j.agent.distance:
                     solution_i.domination_count += 1
             # if solution is not dominated by any other solution
             if solution_i.domination_count == 0:
@@ -175,8 +179,8 @@ class EvolveManager:
             for solution in current_front:
                 # for each solution_j that is dominated by solution_i:
                 for dominated_solution in solution.dominated_solutions:
-                    dominated_solution.domination_count -= 1
-                    if dominated_solution.domination_count == 0:
+                    dominated_solution.domination_count -= 1 # remove {current_front} front from consideration
+                    if dominated_solution.domination_count == 0: # if solution_j only dominated by solution_i then it will be in the next front
                         dominated_solution.rank = front_rank + 1
                         next_front.append(dominated_solution)
             # get next front
@@ -187,11 +191,10 @@ class EvolveManager:
             # return the list of fronts
             return fronts, solution_lookup
 
-    # holds all NSGA-II related functions
     def calculate_crowding_dist(self, agents, solution_lookup: dict):
         # find the best performing and worst performing solution for each objective (sort the individuals again based on food eaten and moves taken)
-        food_eaten_sorted = sorted(agents, key=lambda x: x.num_food_eaten, reverse=False)
-        moves_taken_sorted = sorted(agents, key=lambda x: x.num_moves_taken, reverse=False)
+        food_eaten_sorted = sorted(agents, key=lambda x: x.food_touched, reverse=False)
+        moves_taken_sorted = sorted(agents, key=lambda x: x.distance, reverse=False)
         agent_most_food = food_eaten_sorted[0]
         agent_least_food = food_eaten_sorted[-1]
         agent_most_moves = moves_taken_sorted[0] # the worst in moves
@@ -212,13 +215,15 @@ class EvolveManager:
             agent_food_index = food_eaten_sorted.index(agent)
             neighbor1 = food_eaten_sorted[agent_food_index - 1] # ate more
             neighbor2 = food_eaten_sorted[agent_food_index + 1] # ate less
-            food_dist = neighbor1.num_food_eaten - neighbor2.num_food_eaten
+            food_dist = neighbor1.food_touched - neighbor2.food_touched
 
             # calculated normalized distance between moves taken and two nearest neighbors
             agent_moves_index = moves_taken_sorted.index(agent)
             neighbor1 = moves_taken_sorted[agent_moves_index - 1] # moved less
             neighbor2 = moves_taken_sorted[agent_moves_index + 1] # moved more
-            moves_dist = neighbor2.num_moves_taken - neighbor1.num_moves_taken
+            moves_dist = neighbor2.distance - neighbor1.distance
+
+            print("food_dist", food_dist, "moves_dist", moves_dist, "sum", food_dist + moves_dist)
 
             # sum the distances
             dist = food_dist + moves_dist
@@ -228,10 +233,14 @@ class EvolveManager:
             elif dist < min_dist:
                 min_dist = dist
         
-        # normalize the crowding distances
+        # normalize the crowding distances if max_dist != min_dist
         norm_factor = max_dist - min_dist
-        for solution in solution_lookup.values():
-            solution.crowding_dist = (solution.crowding_dist - min_dist) / norm_factor
+        if norm_factor == 0: # handle 0 case (no diversity in the population)
+            for solution in solution_lookup.values():
+                solution.crowding_dist = 0  # TODO: does it matter what the default value is?
+        else:
+            for solution in solution_lookup.values():
+                solution.crowding_dist = (solution.crowding_dist - min_dist) / norm_factor
 
     def pareto_tournament(self, agents, solution_lookup):
         # given a population of agents:
