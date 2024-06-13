@@ -6,13 +6,13 @@ from constants import GENE_LEN
 import time
 
 class Gene():
-    def __init__(self, genotype) -> None:
-        self.genotype = genotype # list of integers used to generate the phenotype
+    def __init__(self, genotype, cost=0) -> None:
+        self.genotype = genotype[:] # list of integers used to generate the phenotype
         self.current_codon = 0 # the index of self.genotype being read (updated in parse_expression)
         self.phenotype = None # string representation of the program generated using the grammar
-        self.cost = 0 # the fitness of self.genotype
-        self.memory = [] # list of genotypes received from others...used for infeasible only
-    
+        self.cost = cost # the fitness of self.genotype
+    def copy(self):
+        return Gene(self.genotype[:], self.cost)
     def get_codon(self):
         return self.genotype[self.current_codon]
     

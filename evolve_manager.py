@@ -27,8 +27,8 @@ class EvolveManager:
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
         # sample neighbors from the population
-        num_neighbors = min(random.randint(1,10), len(self.population))
-        agent.memory = random.sample(self.population, num_neighbors)
+        #num_neighbors = min(random.randint(1,10), len(self.population))
+        agent.memory = random.sample(self.population, TOURNAMENT_SIZE) # tournament_size to work with NSGA-II
     
     def total_crossover(self, parents, num_children):
         # do x number of crossover using the parents 
@@ -39,26 +39,37 @@ class EvolveManager:
             children.extend(Gene.crossover(parents[parent1], parents[parent2]))
         return children
 
+    def check_references(objects):
+        seen_addresses = set()
+        for obj in objects:
+            obj_address = id(obj)
+            if obj_address in seen_addresses:
+                return True  # Found a reference to the same object
+            seen_addresses.add(obj_address)
+        return False  # No references to the same object found
+
     def act(self, agent):
         # add genotype (the agent, which contains the genotype) to the memory list
         # perform selection, crossover, mutation
         # evaluate fitness
         # best agent (with their genotype) returned
         if len(agent.memory) == 0:
-            return agent.gene
+            return agent
         agent.memory.append(agent) #add agent's self
 
         sorted_genes = sorted(agent.memory, key=lambda x: x.gene.cost, reverse=True)
-        new_genes = sorted_genes[:2] # keep the top 2 agents automatically
-        new_genes = [gene.gene for gene in new_genes] # only keep the genes
-        j = 0
-
+        new_genes = [gene.gene for gene in sorted_genes[:2]] # get genes of the top two agents for next generation
+        
         #parents = self.tournament_selection(agent.memory) # tournament selection
-        parents = self.nsga2_select(agent.memory) # NSGA-II selection
-        parent_genes = [parent.gene for parent in parents] # below infrastructure requires genes, not agents
+        parents = self.nsga2_select(agent.memory) # NSGA-II selection to pick parents to create new_genes
+
+        # turn parent agents to genes for crossover and mutation, also copy objects to AVOID shared references
+        parent_genes = [parent.gene.copy() for parent in parents]
+
+        j = 0
         while j < len(agent.memory)/2 - 1:
             num_children = SELECTION_PROPORTION * len(agent.memory) - len(new_genes)
-            children = self.total_crossover(parents, num_children) 
+            children = self.total_crossover(parent_genes, num_children) 
             for child in children:
                 child.mutate()
             new_genes.extend(children)
@@ -75,9 +86,9 @@ class EvolveManager:
             temp_agents[i].run_phenotype(temp_agents[i].phenotype)
 
         # compare diversity of the population (diversity metric of fitness function)
-        # for agent in temp_agents:
-        #     diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
-        #     agent.gene.cost += diff
+        for agent in temp_agents:
+            diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
+            agent.gene.cost += diff
 
 
         temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
@@ -132,7 +143,6 @@ class EvolveManager:
         # but greater crowding distance is favored within each rank (i.e. a tie-breaker)
         winners = []
         for i in range(POP_SIZE):
-            print("num agnets", len(agents))
             participants = random.sample(agents, TOURNAMENT_SIZE)
             winners.append(self.pareto_tournament(participants, solution_lookup))
         return winners
@@ -223,7 +233,7 @@ class EvolveManager:
             neighbor2 = moves_taken_sorted[agent_moves_index + 1] # moved more
             moves_dist = neighbor2.distance - neighbor1.distance
 
-            print("food_dist", food_dist, "moves_dist", moves_dist, "sum", food_dist + moves_dist)
+            #print("food_dist", food_dist, "moves_dist", moves_dist, "sum", food_dist + moves_dist)
 
             # sum the distances
             dist = food_dist + moves_dist
