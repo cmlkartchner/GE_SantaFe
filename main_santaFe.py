@@ -1,8 +1,8 @@
 # parse: vector through grammer to get code
-from Agent import HiveMind 
-import CONST as CONST
+from hiveMind import HiveMind 
+import constants as constants
 
 CurrHiveMind = HiveMind()
-CurrHiveMind.generateAgents(CONST.GENERATION_LIMIT)
+CurrHiveMind.generateAgents(constants.GENERATION_LIMIT)
 CurrHiveMind.printAgentIDs()
 # run and test sense 
