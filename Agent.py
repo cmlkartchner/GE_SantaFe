@@ -79,11 +79,13 @@ class Agent:
             self.end()
         self.moves+=1
         self.heading = (self.heading - 1) % 4
+        
     def right(self):
         if self.should_end():
             self.end()
         self.moves+=1
         self.heading = (self.heading + 1) % 4
+        
     def move(self):
         if self.should_end():
             self.end()
@@ -124,17 +126,19 @@ class Agent:
             arg1()
         else:
             arg2()
-
-    # functions for ending the simulation (terminal_functions_run is probably useless)
-    def should_end(self):
-        self.terminal_functions_run += 1
-        if self.food_touched == constants.FOOD_NUM or self.moves == constants.NUM_MOVES or self.terminal_functions_run == 1000:
-            return True
-        return False
-    # def end(self):
-    #     raise EndException("End of simulation")
-
-
+    
+    # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
+    def append_lambda(self, args, arguments, type): 
+        # Capture current values of arguments[0] and arguments[1]
+        arg1, arg2 = arguments[0], arguments[1]
+        if type == "if_food_ahead":
+            args.append(lambda: self.if_food_ahead(arg1, arg2))
+        elif type == "prog2":
+            args.append(lambda: self.prog2(arg1, arg2))
+        elif type == "prog3":
+            arg3 = arguments[2]
+            args.append(lambda: self.prog3(arg1, arg2, arg3))
+    
     def get_arg(self, num_args): # returns a list of lambda functions
         # starting at index
         args = [] # holds num_args lambda functions
@@ -167,22 +171,6 @@ class Agent:
             num_args -= 1
         
         return args
-    
-    def append_lambda(self, args, arguments, type): # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
-        # Capture current values of arguments[0] and arguments[1]
-        arg1, arg2 = arguments[0], arguments[1]
-        if type == "if_food_ahead":
-            args.append(lambda: self.if_food_ahead(arg1, arg2))
-        elif type == "prog2":
-            args.append(lambda: self.prog2(arg1, arg2))
-        elif type == "prog3":
-            arg3 = arguments[2]
-            args.append(lambda: self.prog3(arg1, arg2, arg3))
-    
-    def sense(self, neighboors, hiveMind):
-        self.neighboorList.clear()
-        for num in neighboors:
-            self.neighboorGeneList.append(hiveMind.agentList[num].Gene.genotype)
     
     def parse_phenotype(self):
         # parse the phenotype into a list of functions to call get_args on
@@ -231,6 +219,21 @@ class Agent:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
+    
+    # functions for ending the simulation (terminal_functions_run is probably useless)
+    def should_end(self):
+        self.terminal_functions_run += 1
+        if self.food_touched == constants.FOOD_NUM or self.moves == constants.NUM_MOVES or self.terminal_functions_run == 1000:
+            return True
+        return False
+    
+    def end(self):
+        raise EndException("End of simulation")
+    
+    def sense(self, neighboors, hiveMind):
+        self.neighboorList.clear()
+        for num in neighboors:
+            self.neighboorGeneList.append(hiveMind.agentList[num].Gene.genotype)
 
 if __name__ == "__main__":
     grid = Grid(constants.GRID_WIDTH, constants.GRID_HEIGHT)
