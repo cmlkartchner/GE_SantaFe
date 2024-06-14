@@ -6,6 +6,7 @@ class Food:
         self.position = (x,y)
     def __str__(self) -> str:
         return "F"
+    
 class Grid:
     def __init__(self, width, height) -> None:
         self.width = width

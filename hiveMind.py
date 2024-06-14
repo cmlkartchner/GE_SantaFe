@@ -20,3 +20,8 @@ class HiveMind:
             agent.sense(neighboors, self)
     def getAgent(self, num):
         pass
+    
+class EndException(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
