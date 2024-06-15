@@ -12,7 +12,7 @@ RULES = {
 GENERATIONS = 500
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
-NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
+NUM_MOVES = 500 # number of actions an agent can perform before simulation is ended
 TOURNAMENT_SIZE = 5
 POP_SIZE = 3 # number of parents to return from NSGA-II selection
 
@@ -23,7 +23,7 @@ SOUTH = 2
 WEST = 3
 NUM_AGENTS = 100
 DIVERSITY_CONSTANT = 4 # controls how much diversity affects fitness (lower = more effect)
-DIVERSITY_REWARD = 2 # fixed reward for diversity (a 2nd implementation of diversity)
+DIVERSITY_REWARD = 5 # fixed reward for diversity (a 2nd implementation of diversity)
 
 # grid constants
 GRID_WIDTH = 32

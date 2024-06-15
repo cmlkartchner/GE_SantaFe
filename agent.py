@@ -5,7 +5,7 @@ from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 from copy import deepcopy
 from grid_and_food import Grid, Food
-
+import time
 # Agent class: includes functions for running the phenotype, calculating diversity, and ending the simulation
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:

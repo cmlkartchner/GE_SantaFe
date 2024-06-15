@@ -60,8 +60,8 @@ class EvolveManager:
         sorted_genes = sorted(agent.memory, key=lambda x: x.gene.cost, reverse=True)
         new_genes = [gene.gene for gene in sorted_genes[:2]] # get genes of the top two agents for next generation
         
-        #parents = self.tournament_selection(agent.memory) # tournament selection
-        parents = self.nsga2_select(agent.memory) # NSGA-II selection to pick parents to create new_genes
+        parents = self.tournament_selection(agent.memory) # tournament selection
+        #parents = self.nsga2_select(agent.memory) # NSGA-II selection to pick parents to create new_genes
 
         # turn parent agents to genes for crossover and mutation, also copy objects to AVOID shared references
         parent_genes = [parent.gene.copy() for parent in parents]
@@ -109,26 +109,25 @@ class EvolveManager:
             return new_agent
         return original_agent
     
-    def selection_pair(self, genes):
-        weights=[gene.cost for gene in genes]
+    def selection_pair(self, agents):
+        # select two agents at random, with probability proportional to their cost
+        weights=[agent.gene.cost for agent in agents]
         if sum(weights) <= 0:
-            return random.choices(genes, k=2)
-        return random.choices(genes, weights=weights, k=2)
-    
+            return random.choices(agents, k=2)
+        return random.choices(agents, weights=weights, k=2)
 
-    def tournament_selection(self, genes): 
+    def tournament_selection(self, agents): 
         # returns the list of winners
         # sample k competitors, return the one with the highest cost
         parents = []
-        weights=[gene.cost for gene in genes]
+        weights=[agent.gene.cost for agent in agents]
         for i in range(NUM_COMPETITORS):
             if sum(weights) <= 0:
-                competitors = random.choices(genes, k=2)
+                competitors = random.choices(agents, k=2)
             else:
-                competitors = random.choices(genes, weights=weights, k=NUM_COMPETITORS) 
-            parents.append(max(competitors, key=lambda x: x.cost))
-        return parents[:]
-    
+                competitors = random.choices(agents, weights=weights, k=NUM_COMPETITORS) 
+            parents.append(max(competitors, key=lambda x: x.gene.cost))
+        return parents
 
     ###########################################
     # code for NSGA-II
