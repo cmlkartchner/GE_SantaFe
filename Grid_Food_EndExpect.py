@@ -1,5 +1,5 @@
 import random
-from constants import GRID_HEIGHT, GRID_WIDTH, THE_GRID, FOOD_NUM
+from const import GRID_HEIGHT, GRID_WIDTH, THE_GRID, FOOD_NUM
 
 class Food:
     def __init__(self, x, y) -> None:
@@ -79,3 +79,8 @@ class Grid:
                     else:
                         row_str += str(self.array[i][j])
             print(row_str)
+            
+class EndException(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)

@@ -1,5 +1,5 @@
 GENERATION_LIMIT = 50
-GENE_LEN = 10
+GENE_LEN = 1000
 NEIGHBOOR_SIZE = 4
 
 GRID_WIDTH = 32
@@ -42,7 +42,7 @@ THE_GRID = """
 
 
 RULES = {
-        "<code>": ["<code>", "<progs>",],
+        "<code>": ["<code>", "<progs>"],
         "<progs>": ["<condition>","<prog2>","<prog3>","<op>"],
         "<condition>" : ["if_food_ahead(<progs>,<progs>)"],
         "<prog2>" : ["prog2(<progs>,<progs>)"],

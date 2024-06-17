@@ -1,7 +1,7 @@
 # parse: vector through grammer to get code
-from grid_and_food import Grid
-from hiveMind import HiveMind 
-import constants as const
+from Grid_Food_EndExpect import Grid
+from HiveMind import HiveMind 
+import const as const
 
 CurrHiveMind = HiveMind()
 CurrHiveMind.generateAgents(const.GENERATION_LIMIT)

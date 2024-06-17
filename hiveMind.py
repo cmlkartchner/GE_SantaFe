@@ -1,6 +1,6 @@
-from agent import Agent
+from Agent import Agent
 import numpy as np
-import constants as constants
+import const as const
 
 class HiveMind:
     def __init__(self) -> None:
@@ -16,12 +16,7 @@ class HiveMind:
             agent.printNeighboors()
     def initiateSense(self):
         for agent in self.agentList:
-            neighboors = np.random.randint(constants.GENERATION_LIMIT, size=constants.NEIGHBOOR_SIZE)
+            neighboors = np.random.randint(const.GENERATION_LIMIT, size=const.NEIGHBOOR_SIZE)
             agent.sense(neighboors, self)
     def getAgent(self, num):
         pass
-    
-class EndException(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)

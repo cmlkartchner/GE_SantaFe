@@ -1,9 +1,7 @@
 import numpy as np
 import re
 import random
-from math import inf
-
-from constants import GENE_LEN
+from const import GENE_LEN
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -11,6 +9,7 @@ class Gene():
         self.current_codon = 0
         self.phenotype = None
         self.cost = 0
+        self.index = 0
     
     def get_codon(self):
         return self.genotype[self.current_codon]
@@ -22,8 +21,7 @@ class Gene():
                 self.genotype[i] = random.randint(0, 100)
             i += 1
 
-# A recursive function that evaluates non-terminals in a string in a
-# depth-first search.
+# A recursive function that evaluates non-terminals in a string in a depth-first search.
     def parse_expression(rules, expression, gene, terminal_string):
         non_terminals = re.findall("<[^>]+>", expression)
         # for each non-terminal:
@@ -44,25 +42,23 @@ class Gene():
                 # repeat on the non-terminals in the production
                 terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
         return terminal_string
-
-
+    
 # Generates the program/expression represented by the gene i.e. the phenotype.
     def generate_phenotype(self, rules, start_symbol):
+        num = 0
+        expression = Gene.parse_expression(rules, start_symbol, self, start_symbol)
         while True:
-            expression = start_symbol
-            expression = Gene.parse_expression(rules, start_symbol, self, expression)
+            expression = Gene.parse_expression(rules, expression, self, expression)
             # ensure that is contains A function
             if "<" not in expression and ">" not in expression and "(" in expression:
                 break
             # my issue
-            self.genotype = [random.randint(0,100) for i in range(GENE_LEN)]
+            num += 1
+            print(f'AGAINBRO{num} \n{expression}')
             self.current_codon = 0
         return expression
-
-# """
-# Performs a basic crossover between two Genes;
-# Modify to do the crossover strategy you want
-#     """
+    
+# Performs a basic crossover between two Genes
     def crossover(gene_1, gene_2): 
         # take the first half and combine with second half
         new_gene_1 = Gene(gene_1.genotype[:GENE_LEN//2])
