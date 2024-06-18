@@ -1,18 +1,19 @@
 from gene import Gene
 import random
-from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_MOVES, DIVERSITY_REWARD
+from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_STEPS, DIVERSITY_REWARD
 from constants import NORTH, EAST, SOUTH, WEST
 from end_exception import EndException
 from copy import deepcopy
 from grid_and_food import Grid, Food
 import time
+import numpy as np
 # Agent class: includes functions for running the phenotype, calculating diversity, and ending the simulation
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:
         # cost information
         self.food_touched = 0 # (no food should be double counted)
         self.distance = 0 # how far it has traveled (distance not displacement)
-        self.moves = 0 # how many actions: left, right, move
+        self.steps = 0 # how many actions: left, right, move
 
         # agent id: either set manually else set randomly
         if id is None:
@@ -40,6 +41,10 @@ class Agent:
         self.func = None # parsed list of functions representing the current phenotype
         self.terminal_functions_run = 0
 
+        self.novelty_score = 0 # implementation of novelty_search http://dx.doi.org/10.7551/978-0-262-31709-2-ch137
+        self.amount_food_eaten = np.zeros(26) # N = 26, sample 26 times during simulation
+        # also uses the self.steps listed above
+
     # functions for running the phenotype once it has been generated and parsed by get_args
     def prog2(self, progs1, progs2):
         progs1()
@@ -64,17 +69,17 @@ class Agent:
     def left(self):
         if self.should_end():
             self.end()
-        self.moves+=1
+        self.steps+=1
         self.heading = (self.heading - 1) % 4
     def right(self):
         if self.should_end():
             self.end()
-        self.moves+=1
+        self.steps+=1
         self.heading = (self.heading + 1) % 4
     def move(self):
         if self.should_end():
             self.end()
-        self.moves+=1
+        self.steps+=1
 
         if self.heading == NORTH:
             self.position = (self.position[0], self.position[1] - 1)
@@ -115,7 +120,7 @@ class Agent:
     # functions for ending the simulation (terminal_functions_run is probably useless)
     def should_end(self):
         self.terminal_functions_run += 1
-        if self.food_touched == FOOD_NUM or self.moves == NUM_MOVES or self.terminal_functions_run == 1000:
+        if self.food_touched == FOOD_NUM or self.steps == NUM_STEPS or self.terminal_functions_run == 1000:
             return True
         return False
     def end(self):
@@ -236,7 +241,7 @@ class Agent:
         # repeatedly run the phenotype until the should_end is true
         try:
             self.grid.history[self.id] = set() # reset before running again
-            self.moves = 0
+            self.steps = 0
             self.food_touched = 0
             self.distance = 0
             self.terminal_functions_run = 0
