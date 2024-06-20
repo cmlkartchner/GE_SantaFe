@@ -26,6 +26,26 @@ class Gene():
         non_terminals = re.findall("<[^>]+>", expression)
         # for each non-terminal:
         for non_terminal in non_terminals:
+                if gene.current_codon >= len(gene.genotype):
+                    return terminal_string
+                # decide on production rule
+                productions = rules.get(non_terminal) # list of possible productions
+                production = productions[gene.get_codon() % len(productions)] # select one
+
+                # substitute the non-terminal with the decided on production
+                terminal_string = re.sub(non_terminal, production, terminal_string, 1)
+
+                # ++current_codon
+                gene.current_codon += 1
+                
+                # repeat on the non-terminals in the production
+                terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
+        return terminal_string
+    
+    def finish_expression(rules, expression, gene, terminal_string):
+        non_terminals = re.findall("<[^>]+>", expression)
+        # for each non-terminal:
+        for non_terminal in non_terminals:
                 # needs a better limiter
                 if gene.current_codon >= len(gene.genotype):
                     return terminal_string
@@ -47,6 +67,8 @@ class Gene():
     def generate_phenotype(self, rules, start_symbol):
         num = 0
         expression = Gene.parse_expression(rules, start_symbol, self, start_symbol)
+        self.current_codon = 0
+
         while True:
             expression = Gene.parse_expression(rules, expression, self, expression)
             # ensure that is contains A function

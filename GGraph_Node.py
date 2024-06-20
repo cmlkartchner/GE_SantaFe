@@ -8,14 +8,22 @@ class GGraph:
     # return True if node is in graph
     def isNode(self, rule):
         for node in self.Nodes:
-            if rule == node.get_value():
+            if rule == node.value:
                 return True
         return False
     
     def getNode(self, rule):
         for node in self.Nodes:
-            if rule == node.get_value():
+            if rule == node.value:
                 return node
+            
+    def find_by_mod(self, rule, codon):
+        productions = self.getNode(rule).outNodes
+        return productions[codon % len(productions)]
+    
+    def find_by_weight():
+        # NOTE: use geneotype for new termial selection? Node termaial non terminal lists?
+        pass
             
     # if node exist return if not create new
     def selectNode(self, header):
@@ -50,12 +58,6 @@ class GGraph:
                 trunckNode.appendOutNode(branchNode)
                 branchNode.appendInNode(trunckNode)
                 self.updateWeights(branchNode)
-    def find_by_mod():
-        pass
-    def find_by_weight():
-        pass
-                
-        # NOTE: use geneotype for new termial selection? Node termaial non terminal lists?
 
 class Node:
     def __init__(self, inValue) -> None:
