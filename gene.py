@@ -1,7 +1,8 @@
 import numpy as np
 import re
 import random
-from const import GENE_LEN
+from GGraph_Node import GGraph
+from const import GENE_LEN, RULES
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -21,7 +22,7 @@ class Gene():
                 self.genotype[i] = random.randint(0, 100)
             i += 1
 
-# A recursive function that evaluates non-terminals in a string in a depth-first search.
+    # A recursive function that evaluates non-terminals in a string in a depth-first search.
     def parse_expression(rules, expression, gene, terminal_string):
         non_terminals = re.findall("<[^>]+>", expression)
         for non_terminal in non_terminals:
@@ -38,10 +39,7 @@ class Gene():
                 # repeat on the non-terminals in the production
                 terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
         return terminal_string
-                # OLD
-                # productions = rules.get(non_terminal) # list of possible productions
-                # production = productions[gene.get_codon() % len(productions)] # select one
-    
+                
     def finish_expression(rules, gene, terminal_string):
         non_terminals = re.findall("<[^>]+>", terminal_string)
         for non_terminal in non_terminals:
@@ -56,7 +54,7 @@ class Gene():
                 gene.current_codon += 1
         return terminal_string
     
-# Generates the program/expression represented by the gene i.e. the phenotype.
+    # Generates the program/expression represented by the gene i.e. the phenotype.
     def generate_phenotype(self, rules, start_symbol):
         expression = Gene.parse_expression(rules, start_symbol, self, start_symbol)
         self.current_codon = 0
@@ -73,7 +71,7 @@ class Gene():
         #     print(f'AGAINBRO{num} \n{expression}')
         #     self.current_codon = 0
     
-# Performs a basic crossover between two Genes
+    # Performs a basic crossover between two Genes
     def crossover(gene_1, gene_2): 
         # take the first half and combine with second half
         new_gene_1 = Gene(gene_1.genotype[:GENE_LEN//2])
@@ -82,6 +80,10 @@ class Gene():
         new_gene_2 = Gene(gene_2.genotype[:GENE_LEN//2])
         new_gene_2.genotype.extend(gene_1.genotype[GENE_LEN//2:])
         return new_gene_1, new_gene_2
+
+if __name__ == "__main__":
+    gene = Gene(np.random.randint(101, size=GENE_LEN))
+    gene.generate_phenotype(GGraph(RULES), '<code>')
 
 
 # """

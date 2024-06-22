@@ -1,8 +1,9 @@
 from const import RULES
 
 class GGraph:
-    def __init__(self):
+    def __init__(self, rules):
         self.Nodes = []
+        self.generateGraph(rules)
         
     # return True if node is in graph
     def isNode(self, rule):
@@ -68,6 +69,12 @@ class GGraph:
             for node in Node.outNodes:
                 if node.isTerminal or (node.weight > Node.weight):
                     terminalPath.append(node)
+            # NOTE: not all inculsive could still break with super 'cold' nodes
+            if len(terminalPath) == 0:
+                for node in Node.inNodes:
+                    if node.isTerminal or (node.weight > Node.weight):
+                        terminalPath.append(node)
+            
             return self.weight_traveral(terminalPath[codon % len(terminalPath)], codon)  
         
     def find_by_weight(self, rule, codon):
@@ -92,8 +99,7 @@ class Node:
         self.inNodes.append(node)
 
 if __name__ == "__main__":
-    ggraph = GGraph()
-    ggraph.generateGraph(RULES)
+    ggraph = GGraph(RULES)
     ggraph.printGraph()
     print(ggraph.find_by_mod('<progs>', 32))
     print(ggraph.find_by_weight('<code>', 32))

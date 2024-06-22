@@ -1,7 +1,9 @@
+# production constrants
 GENERATION_LIMIT = 50
-GENE_LEN = 1000
+GENE_LEN = 10
 NEIGHBOOR_SIZE = 4
 
+# Grid constrants
 GRID_WIDTH = 32
 GRID_HEIGHT = 32
 FOOD_NUM = 89

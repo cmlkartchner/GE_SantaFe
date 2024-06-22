@@ -4,6 +4,7 @@ from Gene import Gene
 import const as const
 from copy import deepcopy
 from Grid_Food_EndExpect import Grid, Food, EndException
+from GGraph_Node import GGraph
 
 class Agent:
     def __init__(self, grid, id='', gene=None) -> None:
@@ -34,7 +35,8 @@ class Agent:
         self.neighboorGeneList = []
             
         # generate string representation of program from grammar
-        self.phenotype = self.gene.generate_phenotype(const.RULES, "<code>") 
+        
+        self.phenotype = self.gene.generate_phenotype(GGraph(const.RULES), "<code>") 
 
         self.index = 0 # index of self.func
         self.func = None # parsed list of functions representing the current phenotype
