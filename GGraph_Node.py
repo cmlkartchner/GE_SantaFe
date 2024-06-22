@@ -1,8 +1,7 @@
+from const import RULES
+
 class GGraph:
-    # Todo: 
-    # search by non terminal and return a node/value relative to the mod
-    # create nodes based of dict
-    def __init__(self) -> None:
+    def __init__(self):
         self.Nodes = []
         
     # return True if node is in graph
@@ -16,14 +15,6 @@ class GGraph:
         for node in self.Nodes:
             if rule == node.value:
                 return node
-            
-    def find_by_mod(self, rule, codon):
-        productions = self.getNode(rule).outNodes
-        return productions[codon % len(productions)]
-    
-    def find_by_weight():
-        # NOTE: use geneotype for new termial selection? Node termaial non terminal lists?
-        pass
             
     # if node exist return if not create new
     def selectNode(self, header):
@@ -58,6 +49,31 @@ class GGraph:
                 trunckNode.appendOutNode(branchNode)
                 branchNode.appendInNode(trunckNode)
                 self.updateWeights(branchNode)
+            self.updateWeights(trunckNode)
+    
+    def printGraph(self):
+        for node in self.Nodes:
+            print(f'{node.value}:{node.weight}', [n.value for n in node.outNodes])
+    
+    def find_by_mod(self, rule, codon):
+        productions = self.getNode(rule).outNodes
+        return productions[codon % len(productions)].value
+            
+    def weight_traveral(self, Node, codon):
+        if Node.isTerminal is True:
+            return Node.value
+        else:
+            terminalPath = []
+            # find available options
+            for node in Node.outNodes:
+                if node.isTerminal or (node.weight > Node.weight):
+                    terminalPath.append(node)
+            return self.weight_traveral(terminalPath[codon % len(terminalPath)], codon)  
+        
+    def find_by_weight(self, rule, codon):
+        rootNode = self.getNode(rule)
+        terminal = self.weight_traveral(rootNode, codon)
+        return terminal
 
 class Node:
     def __init__(self, inValue) -> None:
@@ -73,4 +89,12 @@ class Node:
     def appendOutNode(self, node):
         self.outNodes.append(node)
     def appendInNode(self, node):
-        self.outNodes.append(node)
+        self.inNodes.append(node)
+
+if __name__ == "__main__":
+    ggraph = GGraph()
+    ggraph.generateGraph(RULES)
+    ggraph.printGraph()
+    print(ggraph.find_by_mod('<progs>', 32))
+    print(ggraph.find_by_weight('<code>', 32))
+    

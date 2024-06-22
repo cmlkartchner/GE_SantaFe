@@ -24,61 +24,54 @@ class Gene():
 # A recursive function that evaluates non-terminals in a string in a depth-first search.
     def parse_expression(rules, expression, gene, terminal_string):
         non_terminals = re.findall("<[^>]+>", expression)
-        # for each non-terminal:
         for non_terminal in non_terminals:
                 if gene.current_codon >= len(gene.genotype):
                     return terminal_string
-                # decide on production rule
-                productions = rules.get(non_terminal) # list of possible productions
-                production = productions[gene.get_codon() % len(productions)] # select one
+                
+                production = rules.find_by_mod(non_terminal, gene.get_codon())
 
                 # substitute the non-terminal with the decided on production
                 terminal_string = re.sub(non_terminal, production, terminal_string, 1)
 
-                # ++current_codon
                 gene.current_codon += 1
                 
                 # repeat on the non-terminals in the production
                 terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
         return terminal_string
+                # OLD
+                # productions = rules.get(non_terminal) # list of possible productions
+                # production = productions[gene.get_codon() % len(productions)] # select one
     
-    def finish_expression(rules, expression, gene, terminal_string):
-        non_terminals = re.findall("<[^>]+>", expression)
-        # for each non-terminal:
+    def finish_expression(rules, gene, terminal_string):
+        non_terminals = re.findall("<[^>]+>", terminal_string)
         for non_terminal in non_terminals:
-                # needs a better limiter
                 if gene.current_codon >= len(gene.genotype):
-                    return terminal_string
-                # decide on production rule
-                productions = rules.get(non_terminal) # list of possible productions
-                production = productions[gene.get_codon() % len(productions)] # select one
+                    gene.current_codon = 0
+                    
+                production = rules.find_by_weight(non_terminal, gene.get_codon())
 
                 # substitute the non-terminal with the decided on production
                 terminal_string = re.sub(non_terminal, production, terminal_string, 1)
 
-                # ++current_codon
                 gene.current_codon += 1
-                
-                # repeat on the non-terminals in the production
-                terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
         return terminal_string
     
 # Generates the program/expression represented by the gene i.e. the phenotype.
     def generate_phenotype(self, rules, start_symbol):
-        num = 0
         expression = Gene.parse_expression(rules, start_symbol, self, start_symbol)
         self.current_codon = 0
-
-        while True:
-            expression = Gene.parse_expression(rules, expression, self, expression)
-            # ensure that is contains A function
-            if "<" not in expression and ">" not in expression and "(" in expression:
-                break
-            # my issue
-            num += 1
-            print(f'AGAINBRO{num} \n{expression}')
-            self.current_codon = 0
+        expression = Gene.finish_expression(rules, expression, self)
         return expression
+        # OLD
+        # while True:
+        #     expression = Gene.parse_expression(rules, expression, self, expression)
+        #     # ensure that is contains A function
+        #     if "<" not in expression and ">" not in expression and "(" in expression:
+        #         break
+        #     # my issue
+        #     num += 1
+        #     print(f'AGAINBRO{num} \n{expression}')
+        #     self.current_codon = 0
     
 # Performs a basic crossover between two Genes
     def crossover(gene_1, gene_2): 
