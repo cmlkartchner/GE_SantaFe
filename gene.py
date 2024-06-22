@@ -58,7 +58,7 @@ class Gene():
     def generate_phenotype(self, rules, start_symbol):
         expression = Gene.parse_expression(rules, start_symbol, self, start_symbol)
         self.current_codon = 0
-        expression = Gene.finish_expression(rules, expression, self)
+        expression = Gene.finish_expression(rules, self, expression)
         return expression
         # OLD
         # while True:
@@ -83,7 +83,7 @@ class Gene():
 
 if __name__ == "__main__":
     gene = Gene(np.random.randint(101, size=GENE_LEN))
-    gene.generate_phenotype(GGraph(RULES), '<code>')
+    print(gene.generate_phenotype(GGraph(RULES), '<code>'))
 
 
 # """

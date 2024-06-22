@@ -194,7 +194,7 @@ class Agent:
         elif self.func[0] == "right":
             self.right()
     
-    def run_phenotype(self, population):
+    def run_phenotype(self):
         # repeatedly run the phenotype until the should_end is true
         try:
             self.grid.history[self.id] = set() # reset before running again
