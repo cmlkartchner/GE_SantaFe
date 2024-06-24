@@ -31,11 +31,9 @@ class Agent:
         self.grid = grid # every agent is using the SAME grid object
         self.grid.update_history(self, self.position) # init with starting position
 
-        self.memory = [] # list to contain the gene objects of neighbors
-        self.neighboorGeneList = []
+        self.memory = [] 
             
         # generate string representation of program from grammar
-        
         self.phenotype = self.gene.generate_phenotype(GGraph(const.RULES), "<code>") 
 
         self.index = 0 # index of self.func
@@ -44,12 +42,6 @@ class Agent:
     
     def printID(self):
         print(f"{self.id}ID")
-        
-    def printGene(self):
-        print(self.Gene.genotype)
-    
-    def printNeighboors(self):
-        print(self.neighboorGeneList)
 
     # moving fuctions
     def food_ahead(self):
@@ -172,9 +164,6 @@ class Agent:
     
     # functions to taking the output of generate_phenotype and turning it into a runnable program
     def run_phenotype_once(self):
-        # left = self.left
-        # right = self.right
-        # move = self.move
         self.parse_phenotype()
         # skip the first function becasue it is processed here
         self.index = 1 
@@ -210,7 +199,7 @@ class Agent:
         except EndException:
             # reward for food, punish for distance
             self.gene.cost = self.food_touched - (self.distance * .05)
-            if self.food_touched == const.FOOD_NUM: # anyone who gets them all gets big reward
+            if self.food_touched == const.FOOD_NUM:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
@@ -225,21 +214,40 @@ class Agent:
     def end(self):
         raise EndException("End of simulation")
     
-    def sense(self, neighboors, hiveMind):
-        self.neighboorList.clear()
-        for num in neighboors:
-            self.neighboorGeneList.append(hiveMind.agentList[num].Gene.genotype)
+    def sense(self, neighboors):
+        self.memory.clear()
+        self.memory.extend(neighboors)
+    
+    def parentSelection(self):
+        parents = []
+        for agent in self.memory:
+            if agent.gene.cost >= self.gene.cost:
+                parents.append(agent)
+        return parents        
+        
+    def actUpdate(self):
+        parentGenes = self.parentSelection()
+        childrenGenes = self.gene.crossoverProduction(parentGenes)
+        agents = []
+        for gene in childrenGenes:
+            grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
+            gene.mutate()
+            a = Agent(grid, gene=gene)
+            agents.append(a)
+            a.run_phenotype()
+        for agent in agents:
+            if agent.gene.cost > self.gene.cost:
+                self.gene = agent.gene
 
 if __name__ == "__main__":
-    grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
-    print("grid created")
-
-    for i in range(50):
+    for i in range(10):
+        grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT) 
         a = Agent(grid)
         if "move" not in a.phenotype:
             continue
-        print("the phenotype is ", a.phenotype)
         a.run_phenotype()
+        # if a.gene.cost > 10:
+        print("the phenotype is ", a.phenotype)
         grid.print_history(a)
         print("cost is ", a.gene.cost)
         print("_____________________")

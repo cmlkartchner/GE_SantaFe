@@ -1,27 +1,18 @@
 # parse: vector through grammer to get code
-from Grid_Food_EndExpect import Grid
 from HiveMind import HiveMind 
 import const as const
 
-CurrHiveMind = HiveMind()
-CurrHiveMind.generateAgents(const.GENERATION_LIMIT)
-CurrHiveMind.printAgentIDs()
-# run and test sense 
+CurrHiveMind = HiveMind(const.POPULATION_LIMIT)
+with open("fitness_values.txt", "a") as fd:
+    fd.write("Attempt Start \n")
 
-def write_fitness_to_file(population):
-    with open("fitness_values.txt", "a") as fd:
-        for agent in population:
-            fd.write(str(round(agent.gene.cost, 4)) + ", ")
-        fd.write("\n")
+for num in range(const.GENERATIONS):
+    CurrHiveMind.initiateSense()
+    CurrHiveMind.initiateActUpdate()
+    CurrHiveMind.write_fitness_to_file()
 
-# write the phenotypes of the population to a file
-def write_phenotypes(population, i):
-    with open("phenotypes.txt", "a") as fd:
-        fd.write("Generation: " + str(i) + "\n")
-        for agent in population:
-            fd.write(agent.phenotype + "\n")
-            fd.flush()
-        fd.write("\n")
+with open("fitness_values.txt", "a") as fd:
+    fd.write("\n Attempt done")
 
 # main evolution loop here
 # def evolve():

@@ -1,7 +1,15 @@
 # production constrants
-GENERATION_LIMIT = 50
-GENE_LEN = 10
+POPULATION_LIMIT = 100
+GENE_LEN = 50
 NEIGHBOOR_SIZE = 4
+
+# evolve constants
+GENERATIONS = 500
+NUM_COMPETITORS = 5 # number of competitors used in tournament selection
+SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
+NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
+TOURNAMENT_SIZE = 5
+POP_SIZE = 3 # number of parents to return from NSGA-II selection
 
 # Grid constrants
 GRID_WIDTH = 32
@@ -65,11 +73,3 @@ DIVERSITY_REWARD = 2 # fixed reward for diversity (a 2nd implementation of diver
 GRID_WIDTH = 32
 GRID_HEIGHT = 32
 FOOD_NUM = 89
-
-# evolve constants
-GENERATIONS = 500
-NUM_COMPETITORS = 5 # number of competitors used in tournament selection
-SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
-NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
-TOURNAMENT_SIZE = 5
-POP_SIZE = 3 # number of parents to return from NSGA-II selection

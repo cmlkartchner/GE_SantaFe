@@ -8,20 +8,12 @@ class Gene():
     def __init__(self, genotype) -> None:
         self.genotype = genotype
         self.current_codon = 0
-        self.phenotype = None
         self.cost = 0
         self.index = 0
     
     def get_codon(self):
         return self.genotype[self.current_codon]
     
-    def mutate(self):
-        i = 0
-        while i < len(self.genotype):
-            if np.random.random() > 0.8:
-                self.genotype[i] = random.randint(0, 100)
-            i += 1
-
     # A recursive function that evaluates non-terminals in a string in a depth-first search.
     def parse_expression(rules, expression, gene, terminal_string):
         non_terminals = re.findall("<[^>]+>", expression)
@@ -60,26 +52,30 @@ class Gene():
         self.current_codon = 0
         expression = Gene.finish_expression(rules, self, expression)
         return expression
-        # OLD
-        # while True:
-        #     expression = Gene.parse_expression(rules, expression, self, expression)
-        #     # ensure that is contains A function
-        #     if "<" not in expression and ">" not in expression and "(" in expression:
-        #         break
-        #     # my issue
-        #     num += 1
-        #     print(f'AGAINBRO{num} \n{expression}')
-        #     self.current_codon = 0
     
-    # Performs a basic crossover between two Genes
-    def crossover(gene_1, gene_2): 
-        # take the first half and combine with second half
-        new_gene_1 = Gene(gene_1.genotype[:GENE_LEN//2])
-        new_gene_1.genotype.extend(gene_2.genotype[GENE_LEN//2:])
-
-        new_gene_2 = Gene(gene_2.genotype[:GENE_LEN//2])
-        new_gene_2.genotype.extend(gene_1.genotype[GENE_LEN//2:])
-        return new_gene_1, new_gene_2
+    def mutate(self):
+        for num in self.genotype:
+            if np.random.random() > 0.8:
+                num = random.randint(0, 101)   # noqa: F841
+                
+    # Performs a basic crossover between Genes
+    def crossoverProduction(self, genes): 
+        genes.append(self)
+        genotypes = []
+        for gene in genes:
+            genotypes.append(gene.genotype)
+        children = []
+        index = 0
+        while index < len(genotypes) - 1:            
+            new_gene_1 = genotypes[index][:(GENE_LEN/2)]
+            new_gene_1.extend(genotypes[index + 1][:(GENE_LEN/2)])
+            new_gene_2 = genotypes[index][(GENE_LEN/2):]
+            new_gene_2.extend(genotypes[index + 1][(GENE_LEN/2):])
+            genes[index] = new_gene_1.copy()
+            genes[index + 1] = new_gene_2.copy()
+        for geno in genotypes:
+            children.append(Gene(geno))
+        return children
 
 if __name__ == "__main__":
     gene = Gene(np.random.randint(101, size=GENE_LEN))
