@@ -36,17 +36,25 @@ def evolve():
 
     for i in range(GENERATIONS): # each iteration is a 'generation'
         new_population = [] # new population to replace the old one
+        for agent in evolve_manager.population: # run the agents (must be complete before novelty can be calculated)
+            agent.run_phenotype() # sets fitness
+
+        # use num_food array from all agents to calculate novelty
         for agent in evolve_manager.population:
-            agent.run_phenotype(evolve_manager.population) # run program 
+            #print("evolve loop", evolve_manager.population is None)
+            agent.novelty = agent.novelty_score(population=evolve_manager.population) # set novelty score
+        print("before sense-act-update", [agent.novelty for agent in evolve_manager.population])
+        # sense-action-update loop
+        for agent in evolve_manager.population:
             evolve_manager.sense(agent) # sample genotypes from neighbors
             new_agent = evolve_manager.act(agent) # mutate/crossover -> returns best gene produced
             new_population.append(evolve_manager.update(agent, new_agent))
-
+        print("after sense-act-update", [agent.novelty for agent in new_population])
         # compare diversity of the population (diversity metric of fitness function)
         #Agent.apply_diversity(new_population)
-        for agent in new_population:
-            diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
+        # for agent in new_population:
+        #     diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
            
         # sort pop using updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)

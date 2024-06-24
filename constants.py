@@ -21,7 +21,7 @@ NORTH = 0
 EAST = 1
 SOUTH = 2
 WEST = 3
-NUM_AGENTS = 100
+NUM_AGENTS = 50
 DIVERSITY_CONSTANT = 4 # controls how much diversity affects fitness (lower = more effect)
 DIVERSITY_REWARD = 5 # fixed reward for diversity (a 2nd implementation of diversity)
 

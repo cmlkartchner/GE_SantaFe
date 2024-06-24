@@ -26,12 +26,10 @@ class EvolveManager:
 
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
-        # sample neighbors from the population
-        #num_neighbors = min(random.randint(1,10), len(self.population))
         agent.memory = random.sample(self.population, TOURNAMENT_SIZE) # tournament_size to work with NSGA-II
     
     def total_crossover(self, parents, num_children):
-        # do x number of crossover using the parents 
+        # do however many random crossovers are needed to get num_children children
         children = []
         for i in range(int(num_children/2)):
             parent1 = random.randint(0, len(parents)-1)
@@ -39,7 +37,7 @@ class EvolveManager:
             children.extend(Gene.crossover(parents[parent1], parents[parent2]))
         return children
 
-    def check_references(objects):
+    def check_references(objects): # random helper function to make sure no shared references
         seen_addresses = set()
         for obj in objects:
             obj_address = id(obj)
@@ -54,21 +52,22 @@ class EvolveManager:
         # evaluate fitness
         # best agent (with their genotype) returned
         if len(agent.memory) == 0:
+            print("memory is empty")
             return agent
         agent.memory.append(agent) #add agent's self
 
-        sorted_genes = sorted(agent.memory, key=lambda x: x.gene.cost, reverse=True)
+        sorted_genes = sorted(agent.memory, key=lambda x: x.novelty, reverse=True)
         new_genes = [gene.gene for gene in sorted_genes[:2]] # get genes of the top two agents for next generation
-        
-        parents = self.tournament_selection(agent.memory) # tournament selection
+        parents = self.novelty_selection(agent.memory) # novelty selection
+        #parents = self.tournament_selection(agent.memory) # tournament selection
         #parents = self.nsga2_select(agent.memory) # NSGA-II selection to pick parents to create new_genes
 
         # turn parent agents to genes for crossover and mutation, also copy objects to AVOID shared references
         parent_genes = [parent.gene.copy() for parent in parents]
 
         j = 0
-        while j < len(agent.memory)/2 - 1:
-            num_children = SELECTION_PROPORTION * len(agent.memory) - len(new_genes)
+        num_children = SELECTION_PROPORTION * len(self.population) - len(new_genes) # number of children we still need to create
+        while j < len(agent.memory)/2 - 1: # technically with the use of total_crossover the while loop should run 1 time
             children = self.total_crossover(parent_genes, num_children) 
             for child in children:
                 child.mutate()
@@ -83,20 +82,23 @@ class EvolveManager:
         temp_agents = []
         for i in range(min(len(self.temp_ids), len(new_genes))): # len of new_genes varies and could be higher than temp_ids
             temp_agents.append(Agent(agent.grid, gene=new_genes[i], id=self.temp_ids[i]))
-            temp_agents[i].run_phenotype(temp_agents[i].phenotype)
+            temp_agents[i].run_phenotype()
 
+        # use num_food array from all agents to calculate novelty
+        for agent in temp_agents:
+            agent.novelty = agent.novelty_score(population=temp_agents) # set novelty score
         # compare diversity of the population (diversity metric of fitness function)c
         #Agent.apply_diversity(temp_agents)
-        for agent in temp_agents:
-            diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
+        # for agent in temp_agents:
+        #     diff = agent.average_difference(temp_agents)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
 
-        temp_agents = sorted(temp_agents, key=lambda x: x.gene.cost, reverse=True)
+        temp_agents = sorted(temp_agents, key=lambda x: x.novelty, reverse=True)
         return temp_agents[0]
         
     def update(self, original_agent, new_agent):
         # given two genotypes, return the one with the higher cost
-        if original_agent.gene.cost < new_agent.gene.cost:
+        if original_agent.novelty < new_agent.novelty:
             # if we are going to return new agent, change its id, and transfer its prev history over to newid
             assert original_agent.grid == new_agent.grid
             grid = original_agent.grid
@@ -128,6 +130,13 @@ class EvolveManager:
                 competitors = random.choices(agents, weights=weights, k=NUM_COMPETITORS) 
             parents.append(max(competitors, key=lambda x: x.gene.cost))
         return parents
+    
+    def novelty_selection(self, agents):
+        # selection based on novelty (NOT FITNESS)
+        weights=[agent.novelty for agent in agents]
+        if sum(weights) <= 0:
+            return random.choices(agents, k=NUM_COMPETITORS) # random chance
+        return random.choices(agents, weights=weights, k=NUM_COMPETITORS) # weighted chance
 
     ###########################################
     # code for NSGA-II

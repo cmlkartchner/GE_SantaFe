@@ -7,6 +7,7 @@ from copy import deepcopy
 from grid_and_food import Grid, Food
 import time
 import numpy as np
+from scipy.spatial.distance import euclidean
 # Agent class: includes functions for running the phenotype, calculating diversity, and ending the simulation
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:
@@ -41,7 +42,7 @@ class Agent:
         self.func = None # parsed list of functions representing the current phenotype
         self.terminal_functions_run = 0
 
-        self.novelty_score = 0 # implementation of novelty_search http://dx.doi.org/10.7551/978-0-262-31709-2-ch137
+        self.novelty = 0 # implementation of novelty_search http://dx.doi.org/10.7551/978-0-262-31709-2-ch137
         self.amount_food_eaten = np.zeros(26) # N = 26, sample 26 times during simulation
         # also uses the self.steps listed above
 
@@ -55,54 +56,57 @@ class Agent:
         progs2()
         progs3()
 
-    def food_ahead(self):
-        # check if there is food in front of the agent
+    def convert_coords(self):
+        # returns coordinate of the position in front of the agent with wrap around
+        x = self.position[0]
+        y = self.position[1]
         if self.heading == NORTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] - 1) and isinstance(self.grid.array[self.position[1]-1][self.position[0]], Food)
+            return x, (y - 1) % self.grid.height
         elif self.heading == EAST:
-            return self.grid.in_bounds(self.position[0] + 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] + 1], Food)
+            return (x + 1) % self.grid.width, y
         elif self.heading == SOUTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] + 1) and isinstance(self.grid.array[self.position[1] + 1][self.position[0]], Food)
+            return x, (y + 1) % self.grid.height
         elif self.heading == WEST:
-            return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
+            return (x - 1) % self.grid.width, y
+        else:
+            print("Error: heading not found")
+            return
+
+    def food_ahead(self):
+        # check if food in front of agent (food already visited made invisible)
+        spot_ahead = self.convert_coords()
+        return spot_ahead not in self.grid.history[self.id] and isinstance(self.grid.array[spot_ahead[1]][spot_ahead[0]], Food)
+
+    def sample_food(self):
+        # 26 samples * 25 steps = 650 steps
+        # if agent has moved 25 steps since previous sampling, sample the food
+        # collection of food samples is used to calculate novelty score
+
+        # 25 steps, index0
+        # 50 steps, index1
+        if self.steps % 25 == 0 and self.steps != 0:
+            # print(self.amount_food_eaten)
+            # self.grid.print_history(self)
+            # time.sleep(2)
+            # print("_____________________")
+            self.amount_food_eaten[int(self.steps/25 - 1)] = self.food_touched
 
     def left(self):
         if self.should_end():
             self.end()
         self.steps+=1
         self.heading = (self.heading - 1) % 4
+        self.sample_food() 
     def right(self):
         if self.should_end():
             self.end()
         self.steps+=1
         self.heading = (self.heading + 1) % 4
+        self.sample_food() 
     def move(self):
         if self.should_end():
             self.end()
-        self.steps+=1
-
-        if self.heading == NORTH:
-            self.position = (self.position[0], self.position[1] - 1)
-        elif self.heading == EAST:
-            self.position = (self.position[0] + 1, self.position[1])
-        elif self.heading == SOUTH:
-            self.position = (self.position[0], self.position[1] + 1)
-        elif self.heading == WEST:
-            self.position = (self.position[0] - 1, self.position[1])
-        else:
-            print("Error: heading not found")
-            return
-        
-        # circular grid with no end
-        if self.position[0] >= GRID_WIDTH:
-            self.position = (0, self.position[1])
-        elif self.position[0] == -1:
-            self.position = (GRID_WIDTH - 1, self.position[1])
-        
-        if self.position[1] >= GRID_HEIGHT:
-            self.position = (self.position[0], 0)
-        elif self.position[1] == -1:
-            self.position = (self.position[0], GRID_HEIGHT - 1)
+        self.position = self.convert_coords()
 
         # avoid double counting food (note: the grid is never edited, nor is the agent ever inserted into it.
         # The agent just tracks its location in self.grid.history dictionary)
@@ -110,6 +114,8 @@ class Agent:
             self.food_touched += 1
         self.grid.update_history(self, self.position)
         self.distance += 1
+        self.steps+=1
+        self.sample_food() 
 
     def if_food_ahead(self, arg1, arg2):
         if self.food_ahead():
@@ -237,7 +243,20 @@ class Agent:
             return 0 # off switch for when you don't have a population to calculate against
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
     
-    def run_phenotype(self, population):
+    # novelty_functions (basically another approach to diversity)
+    def euclidean_distance(self, other_agent):
+        return euclidean(self.amount_food_eaten, other_agent.amount_food_eaten)
+    
+    def novelty_score(self, population, k=10):
+        # average distance from its k-nearest neighbors (µi) in both the population
+        # if population is None:
+        #     print("invoking none")
+        #     return 0 # off switch for when you don't have a population to calculate against
+        population_without_self = [agent for agent in population if agent.id != self.id]
+        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x))[:k]
+        return round(sum(self.euclidean_distance(agent) for agent in k_nearest) / k, 4)
+
+    def run_phenotype(self):
         # repeatedly run the phenotype until the should_end is true
         try:
             self.grid.history[self.id] = set() # reset before running again
@@ -246,16 +265,27 @@ class Agent:
             self.distance = 0
             self.terminal_functions_run = 0
             self.position = (0,0)
+            self.amount_food_eaten = np.zeros(26)
+            self.novelty = 0
             #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
+                #print("id:", self.id," position before running: ", self.position, "steps taken: ", self.steps)
                 self.run_phenotype_once()
+
         except EndException as e:
             # reward for food, punish for distance
             self.gene.cost = self.food_touched - (self.distance * .05)
             if self.food_touched == FOOD_NUM: # anyone who gets them all gets big reward
                 self.gene.cost += 50
+
+            # self.grid.print_history(self)
+            # print(self.phenotype, "-->", self.amount_food_eaten) 
+            # print("_____________________")
+            # time.sleep(3)
+
             #TODO: how big should the diversity addition be? 
             #print("cost: ", self.phenotype, "\n->", self.gene.cost)
+
 
     def __str__(self) -> str:
         return "A"
