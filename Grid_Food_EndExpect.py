@@ -1,5 +1,5 @@
 import random
-from const import GRID_HEIGHT, GRID_WIDTH, THE_GRID, FOOD_NUM
+from const import THE_GRID
 
 class Food:
     def __init__(self, x, y) -> None:

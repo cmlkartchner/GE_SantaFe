@@ -175,8 +175,9 @@ class Agent:
         # left = self.left
         # right = self.right
         # move = self.move
-        self.parse_phenotype() # set self.func to parsed phenotype
-        # self.index = 1 # skip the first function
+        self.parse_phenotype()
+        # skip the first function becasue it is processed here
+        self.index = 1 
 
         if self.func[0] == "if_food_ahead":
             starting_functions = self.get_arg(2)
@@ -206,7 +207,7 @@ class Agent:
             #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 self.run_phenotype_once()
-        except EndException as e:
+        except EndException:
             # reward for food, punish for distance
             self.gene.cost = self.food_touched - (self.distance * .05)
             if self.food_touched == const.FOOD_NUM: # anyone who gets them all gets big reward
