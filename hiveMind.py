@@ -16,11 +16,11 @@ class HiveMind:
             
     def initiateSense(self):
         for agent in self.agentList:
-            neighboorsPosition = np.random.randint(const.GENERATION_LIMIT, size=const.NEIGHBOOR_SIZE)
+            neighboorsPosition = np.random.randint(const.POPULATION_LIMIT, size=const.NEIGHBOOR_SIZE)
             neighboorsAgents = []
             for num in neighboorsPosition:
                 neighboorsAgents.append(self.agentList[num])
-            agent.sense(neighboorsAgents, self)
+            agent.sense(neighboorsAgents)
             
     def initiateActUpdate(self):
         for agent in self.agentList:

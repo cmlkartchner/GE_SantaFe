@@ -1,5 +1,4 @@
 import random
-import numpy as np
 from Gene import Gene
 import const as const
 from copy import deepcopy
@@ -9,7 +8,7 @@ from GGraph_Node import GGraph
 class Agent:
     def __init__(self, grid, id='', gene=None) -> None:
         if gene is None:
-            self.gene = Gene(np.random.randint(101, size=const.GENE_LEN))
+            self.gene = Gene([random.randint(0, 100) for x in range(const.GENE_LEN)])
         else:
             self.gene = deepcopy(gene)
             
@@ -226,8 +225,8 @@ class Agent:
         return parents        
         
     def actUpdate(self):
-        parentGenes = self.parentSelection()
-        childrenGenes = self.gene.crossoverProduction(parentGenes)
+        parentAgents = self.parentSelection()
+        childrenGenes = self.gene.crossoverProduction(parentAgents)
         agents = []
         for gene in childrenGenes:
             grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
