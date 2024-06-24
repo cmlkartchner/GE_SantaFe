@@ -12,7 +12,7 @@ for num in range(const.GENERATIONS + 1):
     CurrHiveMind.write_fitness_to_file()
     highestScore = CurrHiveMind.getStrongestAgent()
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {highestScore}")
+        fd.write(f"gen{num} highest {highestScore} ")
         
 with open("fitness_values.txt", "a") as fd:
     fd.write("\n Attempt done")
