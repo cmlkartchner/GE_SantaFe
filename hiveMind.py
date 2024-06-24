@@ -13,6 +13,14 @@ class HiveMind:
     def printAgentIDs(self):
         for agent in self.agentList:
             agent.printID()
+        
+    # TODO: make better otime
+    def getStrongestAgent(self):
+        strongAgent = self.agentList[0]
+        for agent in self.agentList:
+            if strongAgent.gene.cost < agent.gene.cost:
+                strongAgent = agent
+        return strongAgent.gene.cost
             
     def initiateSense(self):
         for agent in self.agentList:
