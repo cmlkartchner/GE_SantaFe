@@ -55,16 +55,33 @@ class Agent:
         progs2()
         progs3()
 
+    def convert_coords(self):
+            # returns coordinate of the position in front of the agent with wrap around
+            x = self.position[0]
+            y = self.position[1]
+            if self.heading == NORTH:
+                return x, (y - 1) % self.grid.height
+            elif self.heading == EAST:
+                return (x + 1) % self.grid.width, y
+            elif self.heading == SOUTH:
+                return x, (y + 1) % self.grid.height
+            elif self.heading == WEST:
+                return (x - 1) % self.grid.width, y
+            else:
+                print("Error: heading not found")
+                return
+            
     def food_ahead(self):
-        # check if there is food in front of the agent
-        if self.heading == NORTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] - 1) and isinstance(self.grid.array[self.position[1]-1][self.position[0]], Food)
-        elif self.heading == EAST:
-            return self.grid.in_bounds(self.position[0] + 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] + 1], Food)
-        elif self.heading == SOUTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] + 1) and isinstance(self.grid.array[self.position[1] + 1][self.position[0]], Food)
-        elif self.heading == WEST:
-            return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
+        # check if food in front of agent (food already visited made invisible)
+        # always returns false if they have already been to the spot
+        spot_ahead = self.convert_coords()
+        return spot_ahead not in self.grid.history[self.id] and isinstance(self.grid.array[spot_ahead[1]][spot_ahead[0]], Food)
+    
+    def if_food_ahead(self, arg1, arg2):
+        if self.food_ahead():
+            arg1()
+        else:
+            arg2()
 
     def left(self):
         if self.should_end():
@@ -77,45 +94,16 @@ class Agent:
         self.steps+=1
         self.heading = (self.heading + 1) % 4
     def move(self):
+        # move agent in the direction it is facing
+        # avoid double counting food by making it 'invisible' to the agent
         if self.should_end():
             self.end()
-        self.steps+=1
-
-        if self.heading == NORTH:
-            self.position = (self.position[0], self.position[1] - 1)
-        elif self.heading == EAST:
-            self.position = (self.position[0] + 1, self.position[1])
-        elif self.heading == SOUTH:
-            self.position = (self.position[0], self.position[1] + 1)
-        elif self.heading == WEST:
-            self.position = (self.position[0] - 1, self.position[1])
-        else:
-            print("Error: heading not found")
-            return
-        
-        # circular grid with no end
-        if self.position[0] >= GRID_WIDTH:
-            self.position = (0, self.position[1])
-        elif self.position[0] == -1:
-            self.position = (GRID_WIDTH - 1, self.position[1])
-        
-        if self.position[1] >= GRID_HEIGHT:
-            self.position = (self.position[0], 0)
-        elif self.position[1] == -1:
-            self.position = (self.position[0], GRID_HEIGHT - 1)
-
-        # avoid double counting food (note: the grid is never edited, nor is the agent ever inserted into it.
-        # The agent just tracks its location in self.grid.history dictionary)
+        self.position = self.convert_coords() # wrap around
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
             self.food_touched += 1
         self.grid.update_history(self, self.position)
         self.distance += 1
-
-    def if_food_ahead(self, arg1, arg2):
-        if self.food_ahead():
-            arg1()
-        else:
-            arg2()
+        self.steps+=1
 
     # functions for ending the simulation (terminal_functions_run is probably useless)
     def should_end(self):
@@ -234,6 +222,7 @@ class Agent:
         # compare agent with all the other agents and return its average difference, aka, DIVERSITY
         # cannot be run until all agents are run
         if population is None:
+            print("average difference 0 case invoked")
             return 0 # off switch for when you don't have a population to calculate against
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
     

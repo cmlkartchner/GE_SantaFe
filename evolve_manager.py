@@ -68,7 +68,7 @@ class EvolveManager:
 
         j = 0
         while j < len(agent.memory)/2 - 1:
-            num_children = SELECTION_PROPORTION * len(agent.memory) - len(new_genes)
+            num_children = SELECTION_PROPORTION * len(self.population) - len(new_genes)
             children = self.total_crossover(parent_genes, num_children) 
             for child in children:
                 child.mutate()

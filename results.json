@@ -1,0 +1,18 @@
+{
+    "tests": [
+        {
+            "score": 0,
+            "max_score": 0,
+            "name": "test_file.py::test_wrap_around_index",
+            "output": "\n",
+            "visibility": "visible"
+        },
+        {
+            "score": 0,
+            "max_score": 0,
+            "name": "test_file.py::test_novelty_score",
+            "output": "all the distances:  [5.477225575051661, 8.366600265340756, 8.54400374531753, 8.774964387392123, 10.677078252031311, 12.409673645990857, 14.491376746189438]\nk nearest:  [5.477225575051661, 8.366600265340756, 8.54400374531753, 8.774964387392123, 10.677078252031311]\n\n",
+            "visibility": "visible"
+        }
+    ]
+}

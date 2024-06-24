@@ -44,9 +44,9 @@ def evolve():
 
         # compare diversity of the population (diversity metric of fitness function)
         #Agent.apply_diversity(new_population)
-        for agent in new_population:
-            diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
-            agent.gene.cost += diff
+        # for agent in new_population:
+        #     diff = agent.average_difference(new_population)/DIVERSITY_CONSTANT
+        #     agent.gene.cost += diff
            
         # sort pop using updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
