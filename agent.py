@@ -42,9 +42,11 @@ class Agent:
         self.func = None # parsed list of functions representing the current phenotype
         self.terminal_functions_run = 0
 
-        self.novelty = 0 # implementation of novelty_search http://dx.doi.org/10.7551/978-0-262-31709-2-ch137
-        self.amount_food_eaten = np.zeros(26) # N = 26, sample 26 times during simulation
-        # also uses the self.steps listed above
+        # implementation of novelty_search http://dx.doi.org/10.7551/978-0-262-31709-2-ch137
+        self.novelty = 0 
+        self.amount_food_eaten = np.zeros(26) # N = 26, sample food_touched 26 times during simulation
+        self.food_eaten_sequence = np.zeros((89,2)) # 2nd novelty descriptor alternative (locations of food eaten)
+        
 
     # functions for running the phenotype once it has been generated and parsed by get_args
     def prog2(self, progs1, progs2):
@@ -111,6 +113,7 @@ class Agent:
         # avoid double counting food (note: the grid is never edited, nor is the agent ever inserted into it.
         # The agent just tracks its location in self.grid.history dictionary)
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
+            self.food_eaten_sequence[self.food_touched] = self.position
             self.food_touched += 1
         self.grid.update_history(self, self.position)
         self.distance += 1
@@ -244,16 +247,16 @@ class Agent:
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
     
     # novelty_functions (basically another approach to diversity)
-    def euclidean_distance(self, other_agent):
-        return euclidean(self.amount_food_eaten, other_agent.amount_food_eaten)
+    def euclidean_distance(self, other_agent, type="amount_food"):
+        if type == "amount_food":
+            return euclidean(self.amount_food_eaten, other_agent.amount_food_eaten)
+        elif type == "food_eaten_sequence":
+            return np.linalg.norm(self.food_eaten_sequence - other_agent.food_eaten_sequence)
     
-    def novelty_score(self, population, k=10):
+    def novelty_score(self, population, type="amount_food", k=10):
         # average distance from its k-nearest neighbors (µi) in both the population
-        # if population is None:
-        #     print("invoking none")
-        #     return 0 # off switch for when you don't have a population to calculate against
         population_without_self = [agent for agent in population if agent.id != self.id]
-        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x))[:k]
+        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x, type))[:k]
         return round(sum(self.euclidean_distance(agent) for agent in k_nearest) / k, 4)
 
     def run_phenotype(self):
