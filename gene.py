@@ -81,18 +81,3 @@ class Gene():
 if __name__ == "__main__":
     gene = Gene(np.random.randint(101, size=GENE_LEN))
     print(gene.generate_phenotype(GGraph(RULES), '<code>'))
-
-
-# """
-# Fitness evaluation function;
-# Change the try block based on however you want to calculate fitness
-# """    
-# def evaluate_fitness(expression):
-#     try:
-#         result = eval(expression) # TODO: change to exec() for actual programs
-#         cost = result
-#     except SyntaxError:
-#         # if invalid string (i.e. there are still non-terminals), give expression an infinite cost and return
-#         cost = inf
-#         return cost
-#     return cost
