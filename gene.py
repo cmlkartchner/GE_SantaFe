@@ -55,8 +55,9 @@ class Gene():
     
     def mutate(self):
         for num in self.genotype:
-            if np.random.random() > 0.8:
-                num = random.randint(0, 100)   # noqa: F841
+            if random.randint(1,10) > 5:
+                num = 0
+                num += random.randint(0, 100)
                 
     # Performs a basic crossover between Genes
     def crossoverProduction(self, agents): 
@@ -65,15 +66,17 @@ class Gene():
             genotypes.append(agent.gene.genotype)
         genotypes.append(self.genotype)
         children = []
-        index = 0
-        while index < len(genotypes) - 1:            
+        index = 1
+        splithold = genotypes[0][(GENE_LEN//2):]
+        while index < len(genotypes):            
             new_gene_1 = genotypes[index][:(GENE_LEN//2)]
-            new_gene_1.extend(genotypes[index + 1][:(GENE_LEN//2)])
-            new_gene_2 = genotypes[index][(GENE_LEN//2):]
-            new_gene_2.extend(genotypes[index + 1][(GENE_LEN//2):])
+            new_gene_1.extend(splithold)
+            splithold = genotypes[index][(GENE_LEN//2):]
             genotypes[index] = new_gene_1.copy()
-            genotypes[index + 1] = new_gene_2.copy()
             index += 1
+        new_gene = genotypes[0][:(GENE_LEN//2)]
+        new_gene.extend(splithold)
+        genotypes[0] = new_gene.copy()
         for geno in genotypes:
             children.append(Gene(geno))
         return children
