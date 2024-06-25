@@ -1,7 +1,7 @@
 # production constrants
 POPULATION_LIMIT = 100
 GENE_LEN = 100
-NEIGHBOOR_SIZE = 6
+NEIGHBOOR_SIZE = 4
 
 # evolve constants
 GENERATIONS = 50
