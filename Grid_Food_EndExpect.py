@@ -50,7 +50,7 @@ class Grid:
                     self.array[i][j] = Food(j, i)
 
     def color(self, item):
-        return "\x1b[33m" + str(item) +"\x1b[0m"
+        return "\033[33m" + str(item) +"\033[0m"
     
     def print_grid(self): # if bold = True, an agent must be specified 
         for row in self.array:
@@ -70,9 +70,9 @@ class Grid:
             for j in range(self.width): # x
                 if (j,i) in positions: # BOLD CASE
                     if self.array[i][j] is None:
-                        row_str += self.color(".")
+                        row_str += "o"
                     else:
-                        row_str += self.color(self.array[i][j])
+                        row_str += "&"
 
                 else: #Non-bold case
                     if self.array[i][j] is None:

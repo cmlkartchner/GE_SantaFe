@@ -237,9 +237,10 @@ class Agent:
         for agent in agents:
             if agent.gene.cost > self.gene.cost:
                 self.gene = agent.gene
+                self.position = 
 
 if __name__ == "__main__":
-    for i in range(10):
+    for i in range(2):
         grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT) 
         a = Agent(grid)
         if "move" not in a.phenotype:
@@ -247,6 +248,6 @@ if __name__ == "__main__":
         a.run_phenotype()
         # if a.gene.cost > 10:
         print("the phenotype is ", a.phenotype)
-        grid.print_history(a)
+        print(grid.printed_history(a))
         print("cost is ", a.gene.cost)
         print("_____________________")

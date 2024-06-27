@@ -13,6 +13,7 @@ for num in range(const.GENERATIONS + 1):
     mostFit = CurrHiveMind.getStrongestAgent()
     with open("fitness_values.txt", "a") as fd:
         fd.write(f"gen{num} highest {mostFit.gene.cost}<- ")
+        fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
         fd.write(f"Best Gen{num} Program")
         fd.write('\n')
