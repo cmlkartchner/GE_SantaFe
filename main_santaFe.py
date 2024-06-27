@@ -10,9 +10,16 @@ for num in range(const.GENERATIONS + 1):
     CurrHiveMind.initiateSense()
     CurrHiveMind.initiateActUpdate()
     CurrHiveMind.write_fitness_to_file()
-    highestScore = CurrHiveMind.getStrongestAgent()
+    mostFit = CurrHiveMind.getStrongestAgent()
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {highestScore}<- ")
+        fd.write(f"gen{num} highest {mostFit.gene.cost}<- ")
+    with open("phenotypes.txt", "a") as fd:
+        fd.write(f"Best Gen{num} Program")
+        fd.write('\n')
+        fd.write(mostFit.phenotype)
+        fd.write('\n')
+        fd.write(mostFit.grid.printed_history(mostFit))
+        fd.write('\n')
         
 with open("fitness_values.txt", "a") as fd:
     fd.write("\n Attempt done")

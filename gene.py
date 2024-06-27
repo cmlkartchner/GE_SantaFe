@@ -1,8 +1,8 @@
 import numpy as np
 import re
 import random
-from GGraph_Node import GGraph
-from const import GENE_LEN, RULES
+# from Grid_Food_EndExpect import Grid
+from const import GENE_LEN, GRID_HEIGHT, GRID_WIDTH
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -22,12 +22,9 @@ class Gene():
                     return terminal_string
                 
                 production = rules.find_by_mod(non_terminal, gene.get_codon())
-
                 # substitute the non-terminal with the decided on production
                 terminal_string = re.sub(non_terminal, production, terminal_string, 1)
-
                 gene.current_codon += 1
-                
                 # repeat on the non-terminals in the production
                 terminal_string = Gene.parse_expression(rules, production, gene, terminal_string)
         return terminal_string
@@ -39,10 +36,8 @@ class Gene():
                     gene.current_codon = 0
                     
                 production = rules.find_by_weight(non_terminal, gene.get_codon())
-
                 # substitute the non-terminal with the decided on production
                 terminal_string = re.sub(non_terminal, production, terminal_string, 1)
-
                 gene.current_codon += 1
         return terminal_string
     
@@ -64,23 +59,35 @@ class Gene():
         genotypes = []
         for agent in agents:
             genotypes.append(agent.gene.genotype)
-        genotypes.append(self.genotype)
+        selfVector = np.transpose(np.array([self.genotype]))
+        nlength = len(genotypes)
+        initParents = np.array(genotypes)
+        parentMatrix = np.transpose(np.concatenate((initParents, np.zeros(((GENE_LEN - nlength), GENE_LEN)))))
+        child = np.transpose(np.matmul(parentMatrix, selfVector))
+        # make list to interface with agent
         children = []
-        index = 1
-        splithold = genotypes[0][(GENE_LEN//2):]
-        while index < len(genotypes):            
-            new_gene_1 = genotypes[index][:(GENE_LEN//2)]
-            new_gene_1.extend(splithold)
-            splithold = genotypes[index][(GENE_LEN//2):]
-            genotypes[index] = new_gene_1.copy()
-            index += 1
-        new_gene = genotypes[0][:(GENE_LEN//2)]
-        new_gene.extend(splithold)
-        genotypes[0] = new_gene.copy()
-        for geno in genotypes:
-            children.append(Gene(geno))
+        children.append(Gene(child.astype(int).tolist()[0]))
         return children
 
 if __name__ == "__main__":
-    gene = Gene(np.random.randint(101, size=GENE_LEN))
-    print(gene.generate_phenotype(GGraph(RULES), '<code>'))
+    genes = []
+    for i in range(4):
+        genes.append(Gene([random.randint(0, 100) for x in range(GENE_LEN)]))
+    gene = Gene([random.randint(0, 100) for x in range(GENE_LEN)])
+    print(gene.crossoverProduction(genes))
+    
+
+# children = []
+#         index = 1
+#         splithold = genotypes[0][(GENE_LEN//2):]
+#         while index < len(genotypes):            
+#             new_gene_1 = genotypes[index][:(GENE_LEN//2)]
+#             new_gene_1.extend(splithold)
+#             splithold = genotypes[index][(GENE_LEN//2):]
+#             genotypes[index] = new_gene_1.copy()
+#             index += 1
+#         new_gene = genotypes[0][:(GENE_LEN//2)]
+#         new_gene.extend(splithold)
+#         genotypes[0] = new_gene.copy()
+#         for geno in genotypes:
+#             children.append(Gene(geno))

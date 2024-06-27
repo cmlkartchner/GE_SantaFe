@@ -62,7 +62,8 @@ class Grid:
                     row_str += str(item)
             print(row_str)
     
-    def print_history(self, agent): # print the grid with the agent's path in yellow
+    def printed_history(self, agent):
+        grid_str = ""
         positions = self.history[agent.id]
         for i in range(self.height): # y
             row_str = ""
@@ -78,7 +79,8 @@ class Grid:
                         row_str += "."
                     else:
                         row_str += str(self.array[i][j])
-            print(row_str)
+            grid_str += row_str + "\n"
+        return grid_str
             
 class EndException(Exception):
     def __init__(self, message):

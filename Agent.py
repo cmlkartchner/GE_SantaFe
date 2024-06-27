@@ -8,7 +8,7 @@ from GGraph_Node import GGraph
 class Agent:
     def __init__(self, grid, id='', gene=None) -> None:
         if gene is None:
-            self.gene = Gene([random.randint(0, 100) for x in range(const.GENE_LEN)])
+            self.gene = Gene([random.randint(-60, 60) for x in range(const.GENE_LEN)])
         else:
             self.gene = deepcopy(gene)
             
@@ -225,13 +225,13 @@ class Agent:
         return parents        
         
     def actUpdate(self):
-        parentAgents = self.parentSelection()
-        childrenGenes = self.gene.crossoverProduction(parentAgents)
+        # parentAgents = self.parentSelection()
+        childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
-        for gene in childrenGenes:
+        for g in childrenGenes:
             grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
-            gene.mutate()
-            a = Agent(grid, gene=gene)
+            # gene.mutate()
+            a = Agent(grid, gene=g)
             agents.append(a)
             a.run_phenotype()
         for agent in agents:

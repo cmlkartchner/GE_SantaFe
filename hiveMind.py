@@ -20,7 +20,7 @@ class HiveMind:
         for agent in self.agentList:
             if strongAgent.gene.cost < agent.gene.cost:
                 strongAgent = agent
-        return strongAgent.gene.cost
+        return strongAgent
             
     def initiateSense(self):
         for agent in self.agentList:
