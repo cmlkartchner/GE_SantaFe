@@ -49,9 +49,20 @@ class Gene():
         return expression
     
     def mutate(self):
-        for num in self.genotype:
-            if random.randint(1,10) > 7:
-                num += random.randint(-4, 4)
+        for num in range(len(self.genotype)):
+            if num < (len(self.genotype) * .2):
+                if random.randint(1,10) > 8:
+                    self.genotype[num] += random.randint(-20, 20)
+            elif num < (len(self.genotype) * .4):
+                if random.randint(1,10) > 6:
+                    self.genotype[num] += random.randint(-20, 20)
+            elif num < (len(self.genotype) * .5):
+                if random.randint(1,10) > 4:
+                    self.genotype[num] += random.randint(-20, 20)
+            else:
+                if random.randint(1,10) > 2:
+                    self.genotype[num] += random.randint(-20, 20)
+                    
                 
     # Performs a basic crossover between Genes
     def crossoverProduction(self, agents): 

@@ -236,14 +236,14 @@ class Agent:
             a.run_phenotype()
         pickme = []
         for agent in agents:
-            if agent.gene.cost > (self.gene.cost * .4):
+            if agent.gene.cost > (self.gene.cost * .7):
                 pickme.append(agent.gene)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
             self.gene = pickme[num]
-        # else: TODO: mutate for self imporement if no one gives you a good combo
-            # self.gene
-            # a.run_phenotype()
+        else: 
+            self.gene.mutate()
+            a.run_phenotype()
             # if self
 
 if __name__ == "__main__":
