@@ -6,9 +6,9 @@ import const as const
 class HiveMind:
     def __init__(self, numAgents):
         self.agentList = []
+        self.grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
         for i in range(numAgents):        
-            grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
-            self.agentList.append(Agent(grid, i))
+            self.agentList.append(Agent(self.grid, id=i))
             
     def printAgentIDs(self):
         for agent in self.agentList:

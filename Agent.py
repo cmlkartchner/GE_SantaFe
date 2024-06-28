@@ -229,15 +229,13 @@ class Agent:
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
         for g in childrenGenes:
-            grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
-            # gene.mutate()
-            a = Agent(grid, gene=g)
+            # gene.mutate() TODO: decide usefullness
+            a = Agent(self.grid, gene=g)
             agents.append(a)
             a.run_phenotype()
         for agent in agents:
             if agent.gene.cost > self.gene.cost:
                 self.gene = agent.gene
-                self.position = 
 
 if __name__ == "__main__":
     for i in range(2):

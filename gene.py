@@ -59,15 +59,19 @@ class Gene():
         genotypes = []
         for agent in agents:
             genotypes.append(agent.gene.genotype)
-        selfVector = np.transpose(np.array([self.genotype]))
-        nlength = len(genotypes)
-        initParents = np.array(genotypes)
-        parentMatrix = np.transpose(np.concatenate((initParents, np.zeros(((GENE_LEN - nlength), GENE_LEN)))))
-        child = np.transpose(np.matmul(parentMatrix, selfVector))
-        # make list to interface with agent
+        me = np.transpose(np.array([self.genotype]))
         children = []
-        children.append(Gene(child.astype(int).tolist()[0]))
+        for gene in genotypes:
+            parent = np.transpose(np.array([gene]))
+            child = (np.dot(me, parent) / np.dot(parent, parent)) * parent
+            children.append(np.round(child, decimals=1).tolist())
         return children
+        # nlength = len(genotypes)
+        # initParents = np.array(genotypes)
+        # parentMatrix = np.transpose(np.concatenate((initParents, np.zeros(((GENE_LEN - nlength), GENE_LEN)))))
+        # child = np.transpose(np.matmul(parentMatrix, selfVector))
+        # make list to interface with agent
+        # children.append(Gene(child.astype(int).tolist()[0]))
 
 if __name__ == "__main__":
     genes = []
