@@ -50,17 +50,17 @@ class Gene():
     
     def mutate(self):
         for num in range(len(self.genotype)):
-            if num < (len(self.genotype) * .2):
+            if num < (len(self.genotype) * .5):
+                if random.randint(1,10) > 9:
+                    self.genotype[num] += random.randint(-20, 20)
+            elif num < (len(self.genotype) * .7):
                 if random.randint(1,10) > 8:
                     self.genotype[num] += random.randint(-20, 20)
-            elif num < (len(self.genotype) * .4):
-                if random.randint(1,10) > 6:
-                    self.genotype[num] += random.randint(-20, 20)
-            elif num < (len(self.genotype) * .5):
-                if random.randint(1,10) > 4:
+            elif num < (len(self.genotype) * .9):
+                if random.randint(1,10) > 7:
                     self.genotype[num] += random.randint(-20, 20)
             else:
-                if random.randint(1,10) > 2:
+                if random.randint(1,10) > 6:
                     self.genotype[num] += random.randint(-20, 20)
                     
                 

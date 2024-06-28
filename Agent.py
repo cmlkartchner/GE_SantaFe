@@ -231,7 +231,7 @@ class Agent:
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
         for g in childrenGenes:
-            a = Agent(self.grid, gene=g)
+            a = Agent(self.grid, id='testrun', gene=g)
             agents.append(a)
             a.run_phenotype()
         pickme = []
@@ -241,9 +241,10 @@ class Agent:
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
             self.gene = pickme[num]
-        else: 
-            self.gene.mutate()
-            a.run_phenotype()
+            self.run_phenotype()
+        else:
+            # self.gene.mutate()
+            self.run_phenotype()
             # if self
 
 if __name__ == "__main__":
