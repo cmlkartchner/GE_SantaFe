@@ -50,21 +50,20 @@ class Gene():
     
     def mutate(self):
         for num in self.genotype:
-            if random.randint(1,10) > 5:
-                num = 0
-                num += random.randint(0, 100)
+            if random.randint(1,10) > 7:
+                num += random.randint(-4, 4)
                 
     # Performs a basic crossover between Genes
     def crossoverProduction(self, agents): 
         genotypes = []
         for agent in agents:
             genotypes.append(agent.gene.genotype)
-        me = np.transpose(np.array([self.genotype]))
+        me = np.array(self.genotype)
         children = []
         for gene in genotypes:
-            parent = np.transpose(np.array([gene]))
+            parent = np.array(gene)
             child = (np.dot(me, parent) / np.dot(parent, parent)) * parent
-            children.append(np.round(child, decimals=1).tolist())
+            children.append(Gene(np.round(child).astype(int).tolist()))
         return children
         # nlength = len(genotypes)
         # initParents = np.array(genotypes)

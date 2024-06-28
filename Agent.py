@@ -2,13 +2,15 @@ import random
 from Gene import Gene
 import const as const
 from copy import deepcopy
+import numpy as np
 from Grid_Food_EndExpect import Grid, Food, EndException
+
 from GGraph_Node import GGraph
 
 class Agent:
     def __init__(self, grid, id='', gene=None) -> None:
         if gene is None:
-            self.gene = Gene([random.randint(-60, 60) for x in range(const.GENE_LEN)])
+            self.gene = Gene([random.randint(-40, 40) for x in range(const.GENE_LEN)])
         else:
             self.gene = deepcopy(gene)
             
@@ -197,7 +199,7 @@ class Agent:
                 self.run_phenotype_once()
         except EndException:
             # reward for food, punish for distance
-            self.gene.cost = self.food_touched - (self.distance * .05)
+            self.gene.cost = np.round((self.food_touched - (self.distance * .05)), 2)
             if self.food_touched == const.FOOD_NUM:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
@@ -229,13 +231,20 @@ class Agent:
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
         for g in childrenGenes:
-            # gene.mutate() TODO: decide usefullness
             a = Agent(self.grid, gene=g)
             agents.append(a)
             a.run_phenotype()
+        pickme = []
         for agent in agents:
-            if agent.gene.cost > self.gene.cost:
-                self.gene = agent.gene
+            if agent.gene.cost > (self.gene.cost * .4):
+                pickme.append(agent.gene)
+        if len(pickme) > 0:
+            num = random.randint(0, len(pickme) - 1)
+            self.gene = pickme[num]
+        # else: TODO: mutate for self imporement if no one gives you a good combo
+            # self.gene
+            # a.run_phenotype()
+            # if self
 
 if __name__ == "__main__":
     for i in range(2):

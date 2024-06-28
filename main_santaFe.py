@@ -19,7 +19,7 @@ for num in range(const.GENERATIONS + 1):
         fd.write('\n')
         fd.write(mostFit.phenotype)
         fd.write('\n')
-        fd.write(mostFit.grid.printed_history(mostFit))
+        fd.write(CurrHiveMind.grid.printed_history(mostFit))
         fd.write('\n')
         
 with open("fitness_values.txt", "a") as fd:
