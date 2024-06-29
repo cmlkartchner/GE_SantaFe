@@ -35,7 +35,7 @@ class Agent:
         self.memory = [] 
             
         # generate string representation of program from grammar
-        self.phenotype = self.gene.generate_phenotype(GGraph(const.RULES), "<code>") 
+        self.phenotype = None
 
         self.index = 0 # index of self.func
         self.func = None # parsed list of functions representing the current phenotype
@@ -188,12 +188,13 @@ class Agent:
     def run_phenotype(self):
         # repeatedly run the phenotype until the should_end is true
         try:
-            self.grid.history[self.id] = set() # reset before running again
+            self.grid.history[self.id].clear() # reset before running again
             self.moves = 0
             self.food_touched = 0
             self.distance = 0
             self.terminal_functions_run = 0
             self.position = (0,0)
+            self.phenotype = self.gene.generate_phenotype(GGraph(const.RULES), "<code>") 
             #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 self.run_phenotype_once()
@@ -236,16 +237,16 @@ class Agent:
             a.run_phenotype()
         pickme = []
         for agent in agents:
-            if agent.gene.cost > (self.gene.cost * .7):
-                pickme.append(agent.gene)
+            if agent.gene.cost > 0 and agent.gene.cost > (self.gene.cost * .8):
+                pickme.append(agent)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
-            self.gene = pickme[num]
-            self.run_phenotype()
+            self.gene = pickme[num].gene
         else:
-            # self.gene.mutate()
-            self.run_phenotype()
-            # if self
+            a = Agent(self.grid, id='testrun', gene=self.gene.mutate())
+            a.run_phenotype()
+            if a.gene.cost > 0 and a.gene.cost > (self.gene.cost * .8):
+                self.gene = a.gene
 
 if __name__ == "__main__":
     for i in range(2):

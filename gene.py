@@ -50,18 +50,18 @@ class Gene():
     
     def mutate(self):
         for num in range(len(self.genotype)):
-            if num < (len(self.genotype) * .5):
-                if random.randint(1,10) > 9:
-                    self.genotype[num] += random.randint(-20, 20)
-            elif num < (len(self.genotype) * .7):
+            if num < (len(self.genotype) * .3):
                 if random.randint(1,10) > 8:
-                    self.genotype[num] += random.randint(-20, 20)
-            elif num < (len(self.genotype) * .9):
+                    self.genotype[num] = random.randint(-40, 40)
+            elif num < (len(self.genotype) * .6):
                 if random.randint(1,10) > 7:
-                    self.genotype[num] += random.randint(-20, 20)
-            else:
+                    self.genotype[num] = random.randint(-40, 40)
+            elif num < (len(self.genotype) * .8):
                 if random.randint(1,10) > 6:
-                    self.genotype[num] += random.randint(-20, 20)
+                    self.genotype[num] = random.randint(-40, 40)
+            else:
+                if random.randint(1,10) > 5:
+                    self.genotype[num] = random.randint(-40, 40)
                     
                 
     # Performs a basic crossover between Genes
@@ -73,8 +73,15 @@ class Gene():
         children = []
         for gene in genotypes:
             parent = np.array(gene)
-            child = (np.dot(me, parent) / np.dot(parent, parent)) * parent
-            children.append(Gene(np.round(child).astype(int).tolist()))
+            bottom = np.dot(parent, parent)
+            if bottom == 0:
+                children.append(Gene(np.round(me, decimals=0).astype(int).tolist()))
+            else:
+                scalar =  5 * (np.dot(me, parent) / bottom)
+                child = scalar * parent
+                children.append(Gene(np.round(child, decimals=0).astype(int).tolist()))
+                children.append(Gene(np.ceil(child).astype(int).tolist()))
+                children.append(Gene(np.floor(child).astype(int).tolist()))
         return children
         # nlength = len(genotypes)
         # initParents = np.array(genotypes)

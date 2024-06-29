@@ -1,10 +1,10 @@
 # production constrants
 POPULATION_LIMIT = 100
-GENE_LEN = 30
-NEIGHBOOR_SIZE = 10
+GENE_LEN = 50
+NEIGHBOOR_SIZE = 4
 
 # evolve constants
-GENERATIONS = 1000
+GENERATIONS = 50
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
 NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended

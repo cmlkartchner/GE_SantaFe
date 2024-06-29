@@ -17,6 +17,9 @@ for num in range(const.GENERATIONS + 1):
     with open("phenotypes.txt", "a") as fd:
         fd.write(f"Best Gen{num} Program")
         fd.write('\n')
+        fd.write(f"{mostFit.gene.genotype}")
+        fd.write('\n')
+        mostFit.run_phenotype()
         fd.write(mostFit.phenotype)
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFit))
