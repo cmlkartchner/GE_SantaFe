@@ -1,14 +1,16 @@
 from Agent import Agent
 import numpy as np
+from GGraph_Node import GGraph
 from Grid_Food_EndExpect import Grid
 import const as const
 
 class HiveMind:
     def __init__(self, numAgents):
         self.agentList = []
+        self.rules = GGraph(const.RULES)
         self.grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
         for i in range(numAgents):        
-            self.agentList.append(Agent(self.grid, id=i))
+            self.agentList.append(Agent(self.grid, self.rules, id=i))
             
     def printAgentIDs(self):
         for agent in self.agentList:

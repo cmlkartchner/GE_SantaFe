@@ -6,27 +6,31 @@ CurrHiveMind = HiveMind(const.POPULATION_LIMIT)
 with open("fitness_values.txt", "a") as fd:
     fd.write("Attempt Start \n")
 
+maxHeighest = 0
 for num in range(const.GENERATIONS + 1):
     CurrHiveMind.initiateSense()
     CurrHiveMind.initiateActUpdate()
     CurrHiveMind.write_fitness_to_file()
     mostFit = CurrHiveMind.getStrongestAgent()
+    mostFit.run_phenotype()
+    if mostFit.gene.cost > maxHeighest:
+        maxHeighest = mostFit.gene.cost
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {mostFit.gene.cost}<- ")
+        fd.write(f"gen{num} highest {mostFit.id} food touched {mostFit.food_touched} Score: {mostFit.gene.cost} ")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
         fd.write(f"Best Gen{num} Program")
         fd.write('\n')
         fd.write(f"{mostFit.gene.genotype}")
         fd.write('\n')
-        mostFit.run_phenotype()
         fd.write(mostFit.phenotype)
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFit))
         fd.write('\n')
         
 with open("fitness_values.txt", "a") as fd:
-    fd.write("\n Attempt done")
+    fd.write(f"\n Attempt done; max fit {maxHeighest}")
+    fd.write('\n')
 
 # main evolution loop here
 # def evolve():

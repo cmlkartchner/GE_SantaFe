@@ -2,7 +2,7 @@ import numpy as np
 import re
 import random
 # from Grid_Food_EndExpect import Grid
-from const import GENE_LEN, GRID_HEIGHT, GRID_WIDTH
+from const import GENE_LEN
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -49,20 +49,21 @@ class Gene():
         return expression
     
     def mutate(self):
-        for num in range(len(self.genotype)):
-            if num < (len(self.genotype) * .3):
-                if random.randint(1,10) > 8:
-                    self.genotype[num] = random.randint(-40, 40)
-            elif num < (len(self.genotype) * .6):
-                if random.randint(1,10) > 7:
-                    self.genotype[num] = random.randint(-40, 40)
-            elif num < (len(self.genotype) * .8):
+        newGeno = self.genotype.copy()
+        for num in range(len(newGeno)):
+            if num < (len(newGeno) * .2):
                 if random.randint(1,10) > 6:
-                    self.genotype[num] = random.randint(-40, 40)
-            else:
+                    newGeno[num] = random.randint(-40, 40)
+            elif num < (len(newGeno) * .6):
                 if random.randint(1,10) > 5:
-                    self.genotype[num] = random.randint(-40, 40)
-                    
+                    newGeno[num] = random.randint(-40, 40)
+            elif num < (len(newGeno) * .8):
+                if random.randint(1,10) > 4:
+                    newGeno[num] = random.randint(-40, 40)
+            else:
+                if random.randint(1,10) > 2:
+                    newGeno[num] = random.randint(-40, 40)
+        return Gene(newGeno)
                 
     # Performs a basic crossover between Genes
     def crossoverProduction(self, agents): 

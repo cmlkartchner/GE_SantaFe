@@ -5,15 +5,14 @@ from copy import deepcopy
 import numpy as np
 from Grid_Food_EndExpect import Grid, Food, EndException
 
-from GGraph_Node import GGraph
-
 class Agent:
-    def __init__(self, grid, id='', gene=None) -> None:
+    def __init__(self, grid, rules, id='', gene=None) -> None:
         if gene is None:
             self.gene = Gene([random.randint(-40, 40) for x in range(const.GENE_LEN)])
         else:
             self.gene = deepcopy(gene)
             
+        self.rules = rules
         # cost information
         self.food_touched = 0 # (no food should be double counted)
         self.distance = 0 # how far it has traveled (distance not displacement)
@@ -165,7 +164,6 @@ class Agent:
     
     # functions to taking the output of generate_phenotype and turning it into a runnable program
     def run_phenotype_once(self):
-        self.parse_phenotype()
         # skip the first function becasue it is processed here
         self.index = 1 
 
@@ -194,13 +192,19 @@ class Agent:
             self.distance = 0
             self.terminal_functions_run = 0
             self.position = (0,0)
-            self.phenotype = self.gene.generate_phenotype(GGraph(const.RULES), "<code>") 
+            self.heading = const.NORTH
+            self.grid.update_history(self, self.position)
+            self.gene.current_codon = 0
+            self.gene.index = 0
+            if self.phenotype is None:
+                self.phenotype = self.gene.generate_phenotype(self.rules, "<code>")
+            self.parse_phenotype()
             #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 self.run_phenotype_once()
         except EndException:
             # reward for food, punish for distance
-            self.gene.cost = np.round((self.food_touched - (self.distance * .05)), 2)
+            self.gene.cost = np.round(((self.food_touched * const.FOODINCENTIVE) - (self.distance * const.DISTANCEPINCH)), 2)
             if self.food_touched == const.FOOD_NUM:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
@@ -232,31 +236,33 @@ class Agent:
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
         for g in childrenGenes:
-            a = Agent(self.grid, id='testrun', gene=g)
+            a = Agent(self.grid, self.rules, id='testrun', gene=g)
             agents.append(a)
             a.run_phenotype()
         pickme = []
         for agent in agents:
-            if agent.gene.cost > 0 and agent.gene.cost > (self.gene.cost * .8):
+            if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.DIVERSITY):
                 pickme.append(agent)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
             self.gene = pickme[num].gene
+            self.phenotype = pickme[num].phenotype
         else:
-            a = Agent(self.grid, id='testrun', gene=self.gene.mutate())
+            a = Agent(self.grid, self.rules, id='testrun', gene=self.gene.mutate())
             a.run_phenotype()
-            if a.gene.cost > 0 and a.gene.cost > (self.gene.cost * .8):
+            if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.DIVERSITY):
                 self.gene = a.gene
+                self.phenotype = a.phenotype
 
 if __name__ == "__main__":
-    for i in range(2):
-        grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT) 
-        a = Agent(grid)
-        if "move" not in a.phenotype:
-            continue
+    inputgrid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT) 
+    
+    for i in range(5):
+        # need rules
+        a = Agent(grid=inputgrid, gene=Gene([0, 2, 3, 4, 5]))
         a.run_phenotype()
         # if a.gene.cost > 10:
         print("the phenotype is ", a.phenotype)
-        print(grid.printed_history(a))
+        print(inputgrid.printed_history(a))
         print("cost is ", a.gene.cost)
         print("_____________________")
