@@ -26,7 +26,7 @@ class EvolveManager:
 
     def sense(self, agent):
         # given an agent, set their memory variable to a sample of the population list
-        agent.memory = random.sample(self.population, TOURNAMENT_SIZE) # tournament_size to work with NSGA-II
+        agent.memory = random.sample(self.population, TOURNAMENT_SIZE)[:] # tournament_size to work with NSGA-II
     
     def total_crossover(self, parents, num_children):
         # do however many random crossovers are needed to get num_children children

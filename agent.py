@@ -250,12 +250,12 @@ class Agent:
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
     
     # novelty_functions (basically another approach to diversity)
-    def euclidean_distance(self, other_agent):
-        if DIVERSITY_TYPE == "amount_food":
+    def euclidean_distance(self, other_agent, type=DIVERSITY_TYPE):
+        if type == "amount_food":
             return euclidean(self.amount_food_eaten, other_agent.amount_food_eaten)
-        elif DIVERSITY_TYPE == "food_eaten_sequence":
+        elif type == "food_eaten_sequence":
             return np.linalg.norm(self.food_eaten_sequence - other_agent.food_eaten_sequence)
-        elif DIVERSITY_TYPE == "steps_sequence":
+        elif type == "steps_sequence":
             # dif(self.steps_sequence, other_agent.steps_sequence)
             # --> 0 if x & y are both '*'
             # --> x - y if x & y are both numbers (Should this be absolute value??)
@@ -271,13 +271,13 @@ class Agent:
 
             return difference**.5
     
-    def novelty_score(self, population, k=10):
+    def novelty_score(self, population, type=DIVERSITY_TYPE):
         # average distance from its k-nearest neighbors (µi) in both the population
         # k=10 for amount_food, food_eaten_sequence, k=5 for steps_sequence
+        k = 10 if type in ["amount_food", "food_eaten_sequence"] else 5
         population_without_self = [agent for agent in population if agent.id != self.id]
-        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x))[:k]
-        
-        return round(sum(self.euclidean_distance(agent) for agent in k_nearest) / k, 4)
+        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x, type))[:k]
+        return round(sum(self.euclidean_distance(agent, type) for agent in k_nearest) / k, 4)
 
     def run_phenotype(self):
         # repeatedly run the phenotype until the should_end is true

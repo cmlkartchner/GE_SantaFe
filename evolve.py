@@ -4,7 +4,8 @@ from agent import Agent, Food, Grid
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, NUM_AGENTS, DIVERSITY_CONSTANT, GENERATIONS
 from evolve_manager import EvolveManager
 import time
-
+from datetime import datetime
+import matplotlib.pyplot as plt
 # master class: call python3 evolve.py to run
 
 # write the fitness values of the population to a file
@@ -23,8 +24,25 @@ def write_phenotypes(population, i):
             fd.flush()
         fd.write("\n")
 
+def write_highest_fitness(fitness_list):
+    with open("highest_fitness.txt", "a") as fd:
+        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        fd.write(date + ",")
+        for fitness in fitness_list:
+            fd.write(str(fitness) + ",")
+def create_graph(row_number):
+    # row_number: line number in highest_fitness.txt, 1-indexed
+    with open("highest_fitness.txt", "r") as fd:
+        lines = fd.readlines()
+        line = lines[row_number - 1]
+        numbers = line.split(",")[1:-1] # skip first index
+        numbers = [float(number) for number in numbers]
+        plt.plot(numbers)
+        plt.show()
+
 # main evolution loop here
 def evolve():
+    best_fitness = [] # list of highest fitness values for each generation
     evolve_manager = EvolveManager() # contains all the evolve functions
     grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid for all agents to share
     evolve_manager.generate_population(NUM_AGENTS, grid) # create population (stored within evolve_manager)
@@ -42,7 +60,7 @@ def evolve():
         # use num_food array from all agents to calculate novelty
         for agent in evolve_manager.population:
             #print("evolve loop", evolve_manager.population is None)
-            agent.novelty = agent.novelty_score(population=evolve_manager.population, k=5) # set novelty score
+            agent.novelty = agent.novelty_score(population=evolve_manager.population) # set novelty score
             print(agent.phenotype)
             print(agent.steps_sequence, "novelty score", agent.novelty)
             print(agent.grid.print_history(agent))
@@ -61,6 +79,7 @@ def evolve():
            
         # sort pop using updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
+        best_fitness.append(evolve_manager.population[0].gene.cost)
         write_phenotypes(evolve_manager.population, i)
         write_fitness_to_file(evolve_manager.population)
         
@@ -72,6 +91,8 @@ def evolve():
     best_agent = evolve_manager.population[0]
     print("the cost of the best agent is", best_agent.gene.cost)
     grid.print_history(best_agent)
+    write_highest_fitness(best_fitness)
 
 
-evolve()
+#evolve()
+create_graph(1)

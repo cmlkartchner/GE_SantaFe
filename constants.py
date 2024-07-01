@@ -9,7 +9,7 @@ RULES = {
     }
 
 # evolve constants
-GENERATIONS = 500
+GENERATIONS = 3
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
 NUM_STEPS = 650 # number of actions an agent can perform before simulation is ended
