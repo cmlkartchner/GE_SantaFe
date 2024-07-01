@@ -2,15 +2,16 @@ import numpy as np
 import re
 from math import inf
 import random
-from constants import GENE_LEN
+from constants import GENE_LEN, MUTATION_PROBABILITY
 import time
 
 class Gene():
-    def __init__(self, genotype, cost=0) -> None:
+    def __init__(self, genotype, cost=0, mutation_rate = MUTATION_PROBABILITY) -> None:
         self.genotype = genotype[:] # list of integers used to generate the phenotype
         self.current_codon = 0 # the index of self.genotype being read (updated in parse_expression)
         self.phenotype = None # string representation of the program generated using the grammar
         self.cost = cost # the fitness of self.genotype
+        self.mutation_rate = mutation_rate # the probability of a mutation
     def copy(self):
         return Gene(self.genotype[:], self.cost)
     def get_codon(self):
@@ -19,9 +20,16 @@ class Gene():
     def mutate(self):
         i = 0
         while i < len(self.genotype):
-            if np.random.random() > 0.5: # 50%
+            if np.random.random() < self.mutation_rate:  # use the mutation rate
                 self.genotype[i] = np.random.randint(0, 100)
             i += 1
+
+    def adjust_mutation_rate(self, generation):
+    # Increase mutation rate if no significant improvement
+        if generation > 10 and self.no_improvement_for > 5:
+            self.mutation_rate = min(0.1, self.mutation_rate * 1.5)
+        else:
+            self.mutation_rate = max(0.01, self.mutation_rate * 0.9)
 
     """
     Generates the program/expression represented by the gene i.e. the phenotype.

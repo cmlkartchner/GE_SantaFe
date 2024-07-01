@@ -211,21 +211,13 @@ class Agent:
     ######End of functions for parsing/running program#############################################
 
     def apply_diversity(population):
-        # another approach to diversity (using previous diversity functions)
-        # instead of rewarding all agents according to their difference to each other, 
-        # reward only the top 10% in diversity a fixed amount
-        if len(population) < 10:
-            top_num = 1
-        else:
-            top_num = len(population) // 10
         average_differences = [agent.average_difference(population) for agent in population]
+        max_diff = max(average_differences)
+        
+        for agent, diff in zip(population, average_differences):
+            diversity_reward = (diff / max_diff) * DIVERSITY_REWARD
+            agent.gene.cost += diversity_reward
 
-        population_diff = zip(population, average_differences)
-        most_diverse = sorted(population_diff, key=lambda x: x[1], reverse=True)[:top_num]
-        most_diverse = [agent for agent, _ in most_diverse] # remove the average differences
-
-        for agent in most_diverse:
-            agent.gene.cost += DIVERSITY_REWARD
 
     def diversity(self, agent1_func, agent2_func):
         # calculate the diversity between two agents

@@ -63,6 +63,7 @@ def evolve():
         
         if i % 20 == 0:
             print("generation", i, " highest cost is ", evolve_manager.population[0].gene.cost)
+            print("---highest fitness agent", evolve_manager.population[0].fitness)
             grid.print_history(evolve_manager.population[0])
 
     # print the best agent
