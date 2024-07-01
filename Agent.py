@@ -17,6 +17,8 @@ class Agent:
         self.food_touched = 0 # (no food should be double counted)
         self.distance = 0 # how far it has traveled (distance not displacement)
         self.moves = 0 # how many actions: left, right, move
+        self.isConsecutive = False
+        self.consecutiveFood = 0
 
         # agent id: either set manually else set randomly
         if id == '':
@@ -99,6 +101,11 @@ class Agent:
         # The agent just tracks its location in self.grid.history dictionary)
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
             self.food_touched += 1
+            if self.isConsecutive is True:
+                self.consecutiveFood += 1
+            self.isConsecutive = True
+        else: 
+            self.isConsecutive = False
         self.grid.update_history(self, self.position)
         self.distance += 1
 
@@ -196,6 +203,8 @@ class Agent:
             self.grid.update_history(self, self.position)
             self.gene.current_codon = 0
             self.gene.index = 0
+            self.isConsecutive = False
+            self.consecutiveFood = 0
             if self.phenotype is None:
                 self.phenotype = self.gene.generate_phenotype(self.rules, "<code>")
             self.parse_phenotype()
@@ -204,11 +213,11 @@ class Agent:
                 self.run_phenotype_once()
         except EndException:
             # reward for food, punish for distance
-            self.gene.cost = np.round(((self.food_touched * const.FOODINCENTIVE) - (self.distance * const.DISTANCEPINCH)), 2)
+            self.gene.cost = np.round(((self.consecutiveFood * const.CONSECUTIVE_FOOD) + (self.food_touched * const.FOOD_INCENTIVE) - (self.distance * const.DISTANCEPINCH)), 2)
             if self.food_touched == const.FOOD_NUM:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 
-            #print("cost: ", self.phenotype, "\n->", self.gene.cost)
+            #print("cost: ", self.phenotype, "\n->", self.gene.cost)S
     
     # functions for ending the simulation (terminal_functions_run is probably useless)
     def should_end(self):

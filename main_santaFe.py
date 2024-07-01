@@ -2,6 +2,12 @@
 from HiveMind import HiveMind 
 import const as const
 
+const.DIVERSITY = const.Base_DIVERSITY
+const.FOOD_INCENTIVE = const.Base_FOOD_INCENTIVE
+const.CONSECUTIVE_FOOD = const.Base_CONSECUTIVE_FOOD
+const.DISTANCEPINCH = const.Base_DISTANCEPINCH
+const.MUTATION_RATE = const.Base_MUTATION_RATE
+
 CurrHiveMind = HiveMind(const.POPULATION_LIMIT)
 with open("fitness_values.txt", "a") as fd:
     fd.write("Attempt Start \n")
@@ -16,7 +22,7 @@ for num in range(const.GENERATIONS + 1):
     if mostFit.gene.cost > maxHeighest:
         maxHeighest = mostFit.gene.cost
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {mostFit.id} food touched {mostFit.food_touched} Score: {mostFit.gene.cost} ")
+        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} ")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
         fd.write(f"Best Gen{num} Program")
@@ -27,6 +33,7 @@ for num in range(const.GENERATIONS + 1):
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFit))
         fd.write('\n')
+    CurrHiveMind.dynamicFitnessCheck(mostFit)
         
 with open("fitness_values.txt", "a") as fd:
     fd.write(f"\n Attempt done; max fit {maxHeighest}")

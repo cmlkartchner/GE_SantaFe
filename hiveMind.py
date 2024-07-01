@@ -2,7 +2,7 @@ from Agent import Agent
 import numpy as np
 from GGraph_Node import GGraph
 from Grid_Food_EndExpect import Grid
-import const as const
+import const
 
 class HiveMind:
     def __init__(self, numAgents):
@@ -35,6 +35,12 @@ class HiveMind:
     def initiateActUpdate(self):
         for agent in self.agentList:
             agent.actUpdate()
+    
+    def dynamicFitnessCheck(self, topAgent):
+        if topAgent.distance > (1.8 * topAgent.food_touched):
+            const.DISTANCEPINCH = const.DISTANCEPINCH * 1.2
+        elif topAgent.distance < (1.2 * topAgent.food_touched):
+            const.DISTANCEPINCH = const.DISTANCEPINCH * .85
             
     def write_fitness_to_file(self):
         with open("fitness_values.txt", "a") as fd:

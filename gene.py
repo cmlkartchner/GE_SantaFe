@@ -2,7 +2,7 @@ import numpy as np
 import re
 import random
 # from Grid_Food_EndExpect import Grid
-from const import GENE_LEN
+from const import GENE_LEN, MUTATION_RATE
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -52,16 +52,16 @@ class Gene():
         newGeno = self.genotype.copy()
         for num in range(len(newGeno)):
             if num < (len(newGeno) * .2):
-                if random.randint(1,10) > 6:
+                if random.randint(1,10) > MUTATION_RATE:
                     newGeno[num] = random.randint(-40, 40)
             elif num < (len(newGeno) * .6):
-                if random.randint(1,10) > 5:
+                if random.randint(1,10) > MUTATION_RATE - .1:
                     newGeno[num] = random.randint(-40, 40)
             elif num < (len(newGeno) * .8):
-                if random.randint(1,10) > 4:
+                if random.randint(1,10) > MUTATION_RATE - .2:
                     newGeno[num] = random.randint(-40, 40)
             else:
-                if random.randint(1,10) > 2:
+                if random.randint(1,10) > MUTATION_RATE - .3:
                     newGeno[num] = random.randint(-40, 40)
         return Gene(newGeno)
                 
@@ -75,10 +75,11 @@ class Gene():
         for gene in genotypes:
             parent = np.array(gene)
             bottom = np.dot(parent, parent)
-            if bottom == 0:
+            top = np.dot(me, parent)
+            if bottom == 0 or top == 0:
                 children.append(Gene(np.round(me, decimals=0).astype(int).tolist()))
             else:
-                scalar =  5 * (np.dot(me, parent) / bottom)
+                scalar =  5 * (top / bottom)
                 child = scalar * parent
                 children.append(Gene(np.round(child, decimals=0).astype(int).tolist()))
                 children.append(Gene(np.ceil(child).astype(int).tolist()))
