@@ -3,7 +3,7 @@
         {
             "score": 0,
             "max_score": 0,
-            "name": "test_agent.py::test_euclidean",
+            "name": "test_agent.py::test_steps_sequence",
             "output": "\n",
             "visibility": "visible"
         }

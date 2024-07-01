@@ -2,12 +2,14 @@ from gene import Gene
 import random
 from constants import GENE_LEN, GRID_HEIGHT, GRID_WIDTH, RULES, THE_GRID, FOOD_NUM, NUM_STEPS, DIVERSITY_REWARD
 from constants import NORTH, EAST, SOUTH, WEST
+from constants import DIVERSITY_TYPE
 from end_exception import EndException
 from copy import deepcopy
 from grid_and_food import Grid, Food
 import time
 import numpy as np
 from scipy.spatial.distance import euclidean
+from graph_node import GGraph
 # Agent class: includes functions for running the phenotype, calculating diversity, and ending the simulation
 class Agent:
     def __init__(self, grid, gene=None, id=None) -> None:
@@ -37,6 +39,7 @@ class Agent:
         else:
             self.gene = deepcopy(gene)
         self.phenotype = self.gene.generate_phenotype(RULES, "<code>") #generate string representation of program from grammar
+        #self.phenotype = self.gene.generate_phenotype2(GGraph(RULES), '<code>')
 
         self.index = 0 # index of self.func
         self.func = None # parsed list of functions representing the current phenotype
@@ -46,7 +49,8 @@ class Agent:
         self.novelty = 0 
         self.amount_food_eaten = np.zeros(26) # N = 26, sample food_touched 26 times during simulation
         self.food_eaten_sequence = np.zeros((89,2)) # 2nd novelty descriptor alternative (locations of food eaten)
-        
+        self.steps_sequence = ["*" for i in range(89)] # 3rd novelty descriptor alternative (steps taken to eat food)
+        # essentially an array of the steps taken at each point of food eaten
 
     # functions for running the phenotype once it has been generated and parsed by get_args
     def prog2(self, progs1, progs2):
@@ -79,6 +83,7 @@ class Agent:
         spot_ahead = self.convert_coords()
         return spot_ahead not in self.grid.history[self.id] and isinstance(self.grid.array[spot_ahead[1]][spot_ahead[0]], Food)
 
+    # used for novelty measure #1
     def sample_food(self):
         # 26 samples * 25 steps = 650 steps
         # if agent has moved 25 steps since previous sampling, sample the food
@@ -114,10 +119,11 @@ class Agent:
         # The agent just tracks its location in self.grid.history dictionary)
         if isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position not in self.grid.history[self.id]:
             self.food_eaten_sequence[self.food_touched] = self.position
+            self.steps_sequence[self.food_touched] = self.steps
             self.food_touched += 1
         self.grid.update_history(self, self.position)
         self.distance += 1
-        self.steps+=1
+        self.steps += 1
         self.sample_food() 
 
     def if_food_ahead(self, arg1, arg2):
@@ -138,9 +144,6 @@ class Agent:
     ###################################################################################################
     ####functions to taking the output of generate_phenotype and turning it into a runnable program####
     def run_phenotype_once(self): # master function (calls all the other functions in this section)
-        left = self.left
-        right = self.right
-        move = self.move
         self.parse_phenotype() # set self.func to parsed phenotype
         self.index = 1 # skip the first function
 
@@ -247,16 +250,33 @@ class Agent:
         return sum(self.diversity(self.func, agent.func) for agent in population) / len(population)
     
     # novelty_functions (basically another approach to diversity)
-    def euclidean_distance(self, other_agent, type="amount_food"):
-        if type == "amount_food":
+    def euclidean_distance(self, other_agent):
+        if DIVERSITY_TYPE == "amount_food":
             return euclidean(self.amount_food_eaten, other_agent.amount_food_eaten)
-        elif type == "food_eaten_sequence":
+        elif DIVERSITY_TYPE == "food_eaten_sequence":
             return np.linalg.norm(self.food_eaten_sequence - other_agent.food_eaten_sequence)
+        elif DIVERSITY_TYPE == "steps_sequence":
+            # dif(self.steps_sequence, other_agent.steps_sequence)
+            # --> 0 if x & y are both '*'
+            # --> x - y if x & y are both numbers (Should this be absolute value??)
+            # --> 500 otherwise (1 is a * and 1 is a number)
+            difference = 0
+            for i in range(len(self.steps_sequence)):
+                if self.steps_sequence[i] == "*" and other_agent.steps_sequence[i] == "*":
+                    continue
+                elif self.steps_sequence[i] != "*" and other_agent.steps_sequence[i] != "*":
+                    difference += (abs(int(self.steps_sequence[i]) - int(other_agent.steps_sequence[i])))**2
+                else:
+                    difference += (500)**2
+
+            return difference**.5
     
-    def novelty_score(self, population, type="amount_food", k=10):
+    def novelty_score(self, population, k=10):
         # average distance from its k-nearest neighbors (µi) in both the population
+        # k=10 for amount_food, food_eaten_sequence, k=5 for steps_sequence
         population_without_self = [agent for agent in population if agent.id != self.id]
-        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x, type))[:k]
+        k_nearest = sorted(population_without_self, key=lambda x: self.euclidean_distance(x))[:k]
+        
         return round(sum(self.euclidean_distance(agent) for agent in k_nearest) / k, 4)
 
     def run_phenotype(self):
@@ -268,9 +288,12 @@ class Agent:
             self.distance = 0
             self.terminal_functions_run = 0
             self.position = (0,0)
+
+            # novelty stuff
             self.amount_food_eaten = np.zeros(26)
+            self.food_eaten_sequence = np.zeros((89,2))
+            self.steps_sequence = ["*" for i in range(89)]
             self.novelty = 0
-            #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 #print("id:", self.id," position before running: ", self.position, "steps taken: ", self.steps)
                 self.run_phenotype_once()

@@ -99,6 +99,7 @@ class EvolveManager:
     def update(self, original_agent, new_agent):
         # given two genotypes, return the one with the higher cost
         if original_agent.novelty < new_agent.novelty:
+            # if new agent is superior
             # if we are going to return new agent, change its id, and transfer its prev history over to newid
             assert original_agent.grid == new_agent.grid
             grid = original_agent.grid

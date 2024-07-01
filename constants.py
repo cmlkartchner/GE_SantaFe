@@ -24,6 +24,8 @@ WEST = 3
 NUM_AGENTS = 50
 DIVERSITY_CONSTANT = 4 # controls how much diversity affects fitness (lower = more effect)
 DIVERSITY_REWARD = 5 # fixed reward for diversity (a 2nd implementation of diversity)
+DIVERSITY_TYPE = "steps_sequence" # type of diversity to use for novelty 
+#("amount_food", "food_eaten_sequence", "steps_sequence")
 
 # grid constants
 GRID_WIDTH = 32
