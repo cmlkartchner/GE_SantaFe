@@ -19,6 +19,7 @@ class Agent:
         self.moves = 0 # how many actions: left, right, move
         self.isConsecutive = False
         self.consecutiveFood = 0
+        self.offPath = 0
 
         # agent id: either set manually else set randomly
         if id == '':
@@ -106,6 +107,7 @@ class Agent:
             self.isConsecutive = True
         else: 
             self.isConsecutive = False
+            self.offPath += 1
         self.grid.update_history(self, self.position)
         self.distance += 1
 
@@ -205,6 +207,7 @@ class Agent:
             self.gene.index = 0
             self.isConsecutive = False
             self.consecutiveFood = 0
+            self.offPath = 0
             if self.phenotype is None:
                 self.phenotype = self.gene.generate_phenotype(self.rules, "<code>")
             self.parse_phenotype()
@@ -213,7 +216,7 @@ class Agent:
                 self.run_phenotype_once()
         except EndException:
             # reward for food, punish for distance
-            self.gene.cost = np.round(((self.consecutiveFood * const.CONSECUTIVE_FOOD) + (self.food_touched * const.FOOD_INCENTIVE) - (self.distance * const.DISTANCEPINCH)), 2)
+            self.gene.cost = np.round((((self.consecutiveFood * const.CONSECUTIVE_FOOD) + (self.food_touched * const.FOOD_INCENTIVE)) - ((self.distance * const.DISTANCEPINCH) + (self.offPath * const.OFFPATHPENALTY))), 2)
             if self.food_touched == const.FOOD_NUM:
                 self.gene.cost += 50
             #TODO: how big should the diversity addition be? 

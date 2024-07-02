@@ -37,10 +37,12 @@ class HiveMind:
             agent.actUpdate()
     
     def dynamicFitnessCheck(self, topAgent):
-        if topAgent.distance > (1.8 * topAgent.food_touched):
-            const.DISTANCEPINCH = const.DISTANCEPINCH * 1.2
-        elif topAgent.distance < (1.2 * topAgent.food_touched):
-            const.DISTANCEPINCH = const.DISTANCEPINCH * .85
+        if topAgent.offPath > (.5 * topAgent.distance):
+            const.OFFPATHPENALTY = const.OFFPATHPENALTY * 1.2
+            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * 1.05
+        elif topAgent.offPath < (.10 * topAgent.distance):
+            const.OFFPATHPENALTY = const.OFFPATHPENALTY * .80
+            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * .95
             
     def write_fitness_to_file(self):
         with open("fitness_values.txt", "a") as fd:

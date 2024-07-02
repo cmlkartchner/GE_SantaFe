@@ -1,22 +1,24 @@
 # production constrants
-POPULATION_LIMIT = 100
+POPULATION_LIMIT = 20
 GENE_LEN = 100
-NEIGHBOOR_SIZE = 5
+NEIGHBOOR_SIZE = 3
 
 # evolve constants
 GENERATIONS = 50
 
-Base_DIVERSITY = .65
-Base_FOOD_INCENTIVE = 1.2
+Base_DIVERSITY = .6
+Base_FOOD_INCENTIVE = 1.1
 Base_CONSECUTIVE_FOOD = .5
-Base_DISTANCEPINCH = .2
+Base_OFFPATHPENALTY = .2
+Base_DISTANCEPINCH = .05
 Base_MUTATION_RATE = .8
 
 DIVERSITY = 0
 FOOD_INCENTIVE = 0
 CONSECUTIVE_FOOD = 0
 DISTANCEPINCH = 0
-MUTATION_RATE = 0    
+MUTATION_RATE = 0  
+OFFPATHPENALTY = 0  
 
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover

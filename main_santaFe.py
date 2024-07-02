@@ -7,6 +7,7 @@ const.FOOD_INCENTIVE = const.Base_FOOD_INCENTIVE
 const.CONSECUTIVE_FOOD = const.Base_CONSECUTIVE_FOOD
 const.DISTANCEPINCH = const.Base_DISTANCEPINCH
 const.MUTATION_RATE = const.Base_MUTATION_RATE
+const.OFFPATHPENALTY = const.Base_OFFPATHPENALTY
 
 CurrHiveMind = HiveMind(const.POPULATION_LIMIT)
 with open("fitness_values.txt", "a") as fd:
