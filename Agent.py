@@ -253,7 +253,7 @@ class Agent:
             a.run_phenotype()
         pickme = []
         for agent in agents:
-            if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.DIVERSITY):
+            if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.LEARNED_ACCP):
                 pickme.append(agent)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
@@ -262,7 +262,7 @@ class Agent:
         else:
             a = Agent(self.grid, self.rules, id='testrun', gene=self.gene.mutate())
             a.run_phenotype()
-            if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.DIVERSITY):
+            if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.SELFTAUGHT_ACCP):
                 self.gene = a.gene
                 self.phenotype = a.phenotype
 

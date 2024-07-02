@@ -1,3 +1,4 @@
+
 from Agent import Agent
 import numpy as np
 from GGraph_Node import GGraph
@@ -37,12 +38,16 @@ class HiveMind:
             agent.actUpdate()
     
     def dynamicFitnessCheck(self, topAgent):
-        if topAgent.offPath > (.5 * topAgent.distance):
-            const.OFFPATHPENALTY = const.OFFPATHPENALTY * 1.2
-            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * 1.05
-        elif topAgent.offPath < (.10 * topAgent.distance):
-            const.OFFPATHPENALTY = const.OFFPATHPENALTY * .80
-            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * .95
+        if topAgent.offPath > (const.FITNESS_UPPER_THRESHOLD * topAgent.distance):
+            const.OFFPATHPENALTY = const.OFFPATHPENALTY * const.PENALTY_RATE_INCREASE
+            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * const.INCENTIVE_RATE_INCREASE
+        elif topAgent.offPath < (const.FITNESS_LOWER_THRESHOLD * topAgent.distance):
+            const.OFFPATHPENALTY = const.OFFPATHPENALTY * const.PENALTY_RATE_DECREASE
+            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * const.INCENTIVE_RATE_DECREASE
+            
+    def reassessFitnesses(self):
+        for agent in self.agentList:
+            agent.run_phenotype()
             
     def write_fitness_to_file(self):
         with open("fitness_values.txt", "a") as fd:
