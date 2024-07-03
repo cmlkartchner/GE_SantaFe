@@ -26,7 +26,7 @@ for num in range(const.GENERATIONS + 1):
         fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} ")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
-        fd.write(f"Best Gen{num} Program")
+        fd.write(f"Best Gen{num} Program stat: dist;{mostFit.distance} offP;{mostFit.offPath} cons;{mostFit.consecutiveFood} food;{mostFit.food_touched}")
         fd.write('\n')
         fd.write(f"{mostFit.gene.genotype}")
         fd.write('\n')
@@ -35,6 +35,7 @@ for num in range(const.GENERATIONS + 1):
         fd.write(CurrHiveMind.grid.printed_history(mostFit))
         fd.write('\n')
     CurrHiveMind.dynamicFitnessCheck(mostFit)
+    CurrHiveMind.reassessFitnesses()
         
 with open("fitness_values.txt", "a") as fd:
     fd.write(f"\n Attempt done; max fit {maxHeighest}")
