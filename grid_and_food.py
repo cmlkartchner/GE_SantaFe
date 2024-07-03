@@ -61,8 +61,11 @@ class Grid:
                     row_str += str(item)
             print(row_str)
     
-    def print_history(self, agent): # print the grid with the agent's path in yellow
+    def print_history(self, agent): # print history of passed in agent
         positions = self.history[agent.id]
+        self.print_history_base(positions)
+
+    def print_history_base(self, positions): # print the grid with the agent's path in yellow
         for i in range(self.height): # y
             row_str = ""
             for j in range(self.width): # x

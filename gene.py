@@ -2,15 +2,18 @@ import numpy as np
 import re
 from math import inf
 import random
-from constants import GENE_LEN
+from constants import GENE_LEN, MUTATION_PROBABILITY
 import time
 
 class Gene():
+    mutation_rate = MUTATION_PROBABILITY
+    no_improvement_for = 0 # number of generations with no improvement
     def __init__(self, genotype, cost=0) -> None:
         self.genotype = genotype[:] # list of integers used to generate the phenotype
         self.current_codon = 0 # the index of self.genotype being read (updated in parse_expression)
         self.phenotype = None # string representation of the program generated using the grammar
         self.cost = cost # the fitness of self.genotype
+
     def copy(self):
         return Gene(self.genotype[:], self.cost)
     def get_codon(self):
@@ -19,9 +22,24 @@ class Gene():
     def mutate(self):
         i = 0
         while i < len(self.genotype):
-            if np.random.random() > 0.01: # 50% -> 30%
+            if np.random.random() < Gene.mutation_rate:  # use the mutation rate:
                 self.genotype[i] = np.random.randint(0, 100)
             i += 1
+    
+    @staticmethod
+    def adjust_mutation_rate(generation):
+    # Increase mutation rate if no significant improvement
+        # stay within .01 and .1
+        if generation > 10 and Gene.no_improvement_for > 5:
+            print("previous mutation rate", Gene.mutation_rate)
+            Gene.mutation_rate = min(0.1, Gene.mutation_rate * 1.5)
+            print("new mutation rate", Gene.mutation_rate)
+            time.sleep(1)
+        else:
+            print("previous mutation rate", Gene.mutation_rate)
+            Gene.mutation_rate = max(0.01, Gene.mutation_rate * 0.9)
+            print("decrease (but stay above .01) ->new mutation rate", Gene.mutation_rate)
+            time.sleep(1)
 
     """
     Generates the program/expression represented by the gene i.e. the phenotype.
@@ -41,7 +59,6 @@ class Gene():
             self.current_codon = 0
         return expression
     
-
     def generate_phenotype2(self, rules, start_symbol):
         expression = Gene.parse_expression2(rules, start_symbol, self, start_symbol)
         self.current_codon = 0

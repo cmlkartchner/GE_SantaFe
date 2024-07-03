@@ -19,6 +19,9 @@ class ParetoSolution:
 class EvolveManager:
     def __init__(self) -> None:
         self.population = []
+
+        self.initial_mutation_rate = 0.05
+        self.total_generations = 100
         
     def generate_population(self, size, grid):
         self.population = [Agent(grid) for i in range(size)] # agent automatically generates initial genotype

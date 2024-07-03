@@ -30,6 +30,7 @@ def write_highest_fitness(fitness_list):
         fd.write(date + ",")
         for fitness in fitness_list:
             fd.write(str(fitness) + ",")
+        fd.write("\n")
 def create_graph(row_number):
     # row_number: line number in highest_fitness.txt, 1-indexed
     with open("highest_fitness.txt", "r") as fd:
@@ -43,6 +44,8 @@ def create_graph(row_number):
 # main evolution loop here
 def evolve():
     best_fitness = [] # list of highest fitness values for each generation
+    best_history = () # tuple of (best fitness, best history)
+
     evolve_manager = EvolveManager() # contains all the evolve functions
     grid = Grid(GRID_WIDTH, GRID_HEIGHT) # create ONLY one grid for all agents to share
     evolve_manager.generate_population(NUM_AGENTS, grid) # create population (stored within evolve_manager)
@@ -53,6 +56,7 @@ def evolve():
         print("files cleared and ready for writing")
 
     for i in range(GENERATIONS): # each iteration is a 'generation'
+        Gene.adjust_mutation_rate(i)
         new_population = [] # new population to replace the old one
         for agent in evolve_manager.population: # run the agents (must be complete before novelty can be calculated)
             agent.run_phenotype() # sets fitness
@@ -61,16 +65,12 @@ def evolve():
         for agent in evolve_manager.population:
             #print("evolve loop", evolve_manager.population is None)
             agent.novelty = agent.novelty_score(population=evolve_manager.population) # set novelty score
-            print(agent.phenotype)
-            print(agent.steps_sequence, "novelty score", agent.novelty)
-            print(agent.grid.print_history(agent))
-        print("before sense-act-update", [agent.novelty for agent in evolve_manager.population])
+
         # sense-action-update loop
         for agent in evolve_manager.population:
             evolve_manager.sense(agent) # sample genotypes from neighbors
             new_agent = evolve_manager.act(agent) # mutate/crossover -> returns best gene produced
             new_population.append(evolve_manager.update(agent, new_agent))
-        print("after sense-act-update", [agent.novelty for agent in new_population])
         # compare diversity of the population (diversity metric of fitness function)
         #Agent.apply_diversity(new_population)
         # for agent in new_population:
@@ -79,7 +79,21 @@ def evolve():
            
         # sort pop using updated costs
         evolve_manager.population = sorted(new_population[:], reverse=True, key=lambda x: x.gene.cost)
-        best_fitness.append(evolve_manager.population[0].gene.cost)
+
+        #info for creating graphs of each generation
+        best_fitness.append(evolve_manager.population[0].gene.cost) 
+
+        # update the best agent
+        if best_history == () or evolve_manager.population[0].gene.cost > best_history[0]:
+            best_history = (evolve_manager.population[0].gene.cost, grid.history[evolve_manager.population[0].id].copy())
+
+        # dynamic mutation (can't happen 1st generation)
+        if len(best_fitness) > 1 and best_fitness[-1] == best_fitness[-2]:
+            print("no improvement for", Gene.no_improvement_for, "generations")
+            Gene.no_improvement_for += 1
+        else: # the highest fitness changed (not necessarily increase/decrease)
+            Gene.no_improvement_for = 0
+
         write_phenotypes(evolve_manager.population, i)
         write_fitness_to_file(evolve_manager.population)
         
@@ -88,11 +102,9 @@ def evolve():
             grid.print_history(evolve_manager.population[0])
 
     # print the best agent
-    best_agent = evolve_manager.population[0]
-    print("the cost of the best agent is", best_agent.gene.cost)
-    grid.print_history(best_agent)
+    print("the cost of the best agent is", best_history[0])
+    grid.print_history_base(best_history[1])
     write_highest_fitness(best_fitness)
 
-
-#evolve()
-create_graph(1)
+evolve()
+#create_graph(1)
