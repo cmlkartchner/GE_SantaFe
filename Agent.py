@@ -50,13 +50,13 @@ class Agent:
     def food_ahead(self):
         # check if there is food in front of the agent
         if self.heading == const.NORTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] - 1) and isinstance(self.grid.array[self.position[1]-1][self.position[0]], Food)
+            return self.grid.in_bounds(self.position[0],self.position[1] - 1) and isinstance(self.grid.array[self.position[1]-1][self.position[0]], Food) and ((self.position[0],self.position[1] - 1) not in self.grid.history[self.id])
         elif self.heading == const.EAST:
-            return self.grid.in_bounds(self.position[0] + 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] + 1], Food)
+            return self.grid.in_bounds(self.position[0] + 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] + 1], Food) and ((self.position[0] + 1,self.position[1]) not in self.grid.history[self.id])
         elif self.heading == const.SOUTH:
-            return self.grid.in_bounds(self.position[0],self.position[1] + 1) and isinstance(self.grid.array[self.position[1] + 1][self.position[0]], Food)
+            return self.grid.in_bounds(self.position[0],self.position[1] + 1) and isinstance(self.grid.array[self.position[1] + 1][self.position[0]], Food) and ((self.position[0],self.position[1] + 1) not in self.grid.history[self.id])
         elif self.heading == const.WEST:
-            return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food)
+            return self.grid.in_bounds(self.position[0] - 1,self.position[1]) and isinstance(self.grid.array[self.position[1]][self.position[0] - 1], Food) and ((self.position[0] - 1,self.position[1]) not in self.grid.history[self.id])
 
     def left(self):
         if self.should_end():
