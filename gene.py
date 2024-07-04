@@ -28,18 +28,16 @@ class Gene():
     
     @staticmethod
     def adjust_mutation_rate(generation):
-    # Increase mutation rate if no significant improvement
-        # stay within .01 and .1
+        # stay within .01 and .1: increase if no changes in fitness for 5 generations
         if generation > 10 and Gene.no_improvement_for > 5:
             print("previous mutation rate", Gene.mutation_rate)
             Gene.mutation_rate = min(0.1, Gene.mutation_rate * 1.5)
             print("new mutation rate", Gene.mutation_rate)
-            time.sleep(1)
+            # time.sleep(1)
         else:
             print("previous mutation rate", Gene.mutation_rate)
             Gene.mutation_rate = max(0.01, Gene.mutation_rate * 0.9)
             print("decrease (but stay above .01) ->new mutation rate", Gene.mutation_rate)
-            time.sleep(1)
 
     """
     Generates the program/expression represented by the gene i.e. the phenotype.

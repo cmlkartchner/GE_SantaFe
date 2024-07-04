@@ -24,22 +24,36 @@ def write_phenotypes(population, i):
             fd.flush()
         fd.write("\n")
 
-def write_highest_fitness(fitness_list):
+# write the highest fitness values of each generation to a file & the best history
+def write_highest_fitness(fitness_list, best_history): 
     with open("highest_fitness.txt", "a") as fd:
         date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         fd.write(date + ",")
         for fitness in fitness_list:
             fd.write(str(fitness) + ",")
         fd.write("\n")
+        fd.write(str(best_history) + "\n")
 def create_graph(row_number):
     # row_number: line number in highest_fitness.txt, 1-indexed
+    grid = Grid(GRID_WIDTH, GRID_HEIGHT)
     with open("highest_fitness.txt", "r") as fd:
         lines = fd.readlines()
-        line = lines[row_number - 1]
-        numbers = line.split(",")[1:-1] # skip first index
+        row = lines[row_number - 1].strip() # get specific row
+        history_row = eval(lines[row_number].strip()) # get the best history
+        data = row.split(",")
+
+        
+        announce_best_info(grid, history_row)
+        print("On date:", data[0])
+
+        numbers = data[1:-1] # skip first index (and last bc it's an empty string)
         numbers = [float(number) for number in numbers]
         plt.plot(numbers)
         plt.show()
+
+def announce_best_info(grid, best_history):
+    print("the cost of the best agent is", best_history[0])
+    grid.print_history_base(best_history[1])
 
 # main evolution loop here
 def evolve():
@@ -89,7 +103,6 @@ def evolve():
 
         # dynamic mutation (can't happen 1st generation)
         if len(best_fitness) > 1 and best_fitness[-1] == best_fitness[-2]:
-            print("no improvement for", Gene.no_improvement_for, "generations")
             Gene.no_improvement_for += 1
         else: # the highest fitness changed (not necessarily increase/decrease)
             Gene.no_improvement_for = 0
@@ -102,9 +115,8 @@ def evolve():
             grid.print_history(evolve_manager.population[0])
 
     # print the best agent
-    print("the cost of the best agent is", best_history[0])
-    grid.print_history_base(best_history[1])
-    write_highest_fitness(best_fitness)
-
-evolve()
-#create_graph(1)
+    write_highest_fitness(best_fitness, best_history)
+    announce_best_info(grid, best_history) # highest cost and their path
+    
+#evolve()
+create_graph(6)
