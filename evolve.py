@@ -42,7 +42,6 @@ def create_graph(row_number):
         history_row = eval(lines[row_number].strip()) # get the best history
         data = row.split(",")
 
-        
         announce_best_info(grid, history_row)
         print("On date:", data[0])
 
@@ -118,5 +117,5 @@ def evolve():
     write_highest_fitness(best_fitness, best_history)
     announce_best_info(grid, best_history) # highest cost and their path
     
-#evolve()
-create_graph(6)
+evolve()
+#create_graph(8)
