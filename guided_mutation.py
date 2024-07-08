@@ -14,8 +14,6 @@ RULES = { # each item in nested list will be a child to add to parent
 non_terminals_list = ["S", "E", "F", "N"]
 terminals = ["+", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
-master_node = Node("<S>", [])
-
 def parse_expression(rules, gene, tree, non_terminals):
         # non_termianls = list of references to leaf non-termianls in tree not finished (TREES)
         # for each non-terminal:
@@ -37,37 +35,58 @@ def parse_expression(rules, gene, tree, non_terminals):
                     # update non-terminal list
                     if child in non_terminals_list:
                         non_terminals.insert(insert_point, new_node) # add left to right, but before existing elements
+                        
                 non_terminals.remove(non_terminal)
 
                 # ++current_codon
                 gene.current_codon += 1
                 
-                #print(tree)
-                print(gene.current_codon, len(gene.genotype))
-                time.sleep(.2)
+
                 # repeat on the non-terminals in the production
                 parse_expression(rules, gene, tree, non_terminals)
 
-
-# STEP 1: Produce a tree from the grammar
-
-
-def generate_phenotype(self, rules, start_symbol):
+def generate_phenotype_start(gene, tree, rules, start_symbol):
+        # repeatedly generate a tree until it contains no terminals (only for start, not mutation/crossover)
+        gene.phenotype = ""
         while True:
-            expression = start_symbol
-            expression = Gene.parse_expression(rules, start_symbol, self, expression)
-            if "<" not in expression and ">" not in expression and "(" in expression: # ensure that is contains A function
-                print("ALL GOOD")
+            to_do = [tree]
+            parse_expression(rules, gene, tree, to_do)
+            if len(to_do) == 0:
                 break
-            print("bad need to run again")
-            self.genotype = [random.randint(0,100) for i in range(GENE_LEN)] # try again
-            self.current_codon = 0
-        return expression
+            gene.genotype = [random.randint(0,100) for i in range(GENE_LEN)]
+            gene.current_codon = 0
+            tree = Node(start_symbol, [])
 
-g = Gene([0,0,4,0,4,3,9], 0) #[random.randint(0,100) for i in range(100)]
-starting_tree = Node("S", [])
-parse_expression(RULES, g, starting_tree, [starting_tree])
-print(starting_tree)
+        gene.tree = tree #TODO: add variable to class
+        create_phenotype_string(gene, tree) # alters gene.phenotype
+        return gene.phenotype
+
+def create_phenotype_string(gene, tree):
+      # go through all the leaves
+    if tree.children == []:
+        gene.phenotype += tree.symbol
+    for child in tree.children:
+        create_phenotype_string(gene, child)
+    return gene.phenotype
+
+# TESTING
+g = Gene([random.randint(0,100) for i in range(10)],0)
+#g = Gene([0,0,4,0,4,3,9], 0) #[random.randint(0,100) for i in range(100)]
+#g = Gene([0,0,4], 0) # intentionally incomplete gene
+g.phenotype = ""
+tree = Node("S", [])
+to_do = [tree]
+
+generate_phenotype_start(g, tree, RULES, "S")
+# parse_expression(RULES, g, tree, to_do)
+# create_phenotype_string(g, tree)
+print(tree)
+print(to_do)
+print(g.phenotype)
+
+# how to detect if a tree has non-terminals.
+# well, we should we able to construct a string using the 'leaves'
+
 # CN1 = mutating node
 # create tree to show the whole grammar translation process
 
