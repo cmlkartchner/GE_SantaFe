@@ -8,7 +8,13 @@ from Grid_Food_EndExpect import Grid, Food, EndException
 class Agent:
     def __init__(self, grid, rules, id='', gene=None) -> None:
         if gene is None:
-            self.gene = Gene([random.randint(-40, 40) for x in range(const.GENE_LEN)])
+            genelist = []
+            for x in range(const.GENE_LEN):
+                num = random.randint(-40, 40)
+                while num == 0:
+                    num = random.randint(-40, 40)
+                genelist.append(num)
+            self.gene = Gene(genelist)
         else:
             self.gene = deepcopy(gene)
             
@@ -21,6 +27,9 @@ class Agent:
         self.consecutiveFood = 0
         self.offPath = 0
 
+        self.projectionresult = 0
+        self.mutateresult = 0
+        
         # agent id: either set manually else set randomly
         if id == '':
             self.id = f'ID{random.randint(0, 1000)}'
@@ -105,9 +114,11 @@ class Agent:
             if self.isConsecutive is True:
                 self.consecutiveFood += 1
             self.isConsecutive = True
-        else: 
-            self.isConsecutive = False
+        elif not isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position in self.grid.history[self.id]: 
             self.offPath += 1
+            self.isConsecutive = False
+        else:
+            self.isConsecutive = False
         self.grid.update_history(self, self.position)
         self.distance += 1
 
@@ -244,6 +255,8 @@ class Agent:
         return parents        
         
     def actUpdate(self):
+        self.projectionresult = 0
+        self.mutateresult = 0
         # parentAgents = self.parentSelection()
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
@@ -259,12 +272,14 @@ class Agent:
             num = random.randint(0, len(pickme) - 1)
             self.gene = pickme[num].gene
             self.phenotype = pickme[num].phenotype
+            self.projectionresult += 1 
         else:
             a = Agent(self.grid, self.rules, id='testrun', gene=self.gene.mutate())
             a.run_phenotype()
             if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.SELFTAUGHT_ACCP):
                 self.gene = a.gene
                 self.phenotype = a.phenotype
+                self.mutateresult += 1
 
 if __name__ == "__main__":
     inputgrid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT) 

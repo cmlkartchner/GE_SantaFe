@@ -13,20 +13,24 @@ CurrHiveMind = HiveMind(const.POPULATION_LIMIT)
 with open("fitness_values.txt", "a") as fd:
     fd.write("Attempt Start \n")
 
+with open("genotypes.txt", "a") as fd:
+    fd.write("Attempt Start \n")
+
 maxHeighest = 0
 for num in range(const.GENERATIONS + 1):
     CurrHiveMind.initiateSense()
     CurrHiveMind.initiateActUpdate()
     CurrHiveMind.write_fitness_to_file()
+    CurrHiveMind.write_genotypes()
     mostFit = CurrHiveMind.getStrongestAgent()
     mostFit.run_phenotype()
-    if mostFit.gene.cost > maxHeighest:
-        maxHeighest = mostFit.gene.cost
+    if mostFit.food_touched > maxHeighest:
+        maxHeighest = mostFit.food_touched
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} ")
+        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} Projection: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
-        fd.write(f"Best Gen{num} Program stat: dist;{mostFit.distance} offP;{mostFit.offPath} cons;{mostFit.consecutiveFood} food;{mostFit.food_touched}")
+        fd.write(f"Gen{num} stat: currcon;{const.CONSECUTIVE_FOOD} currpen;{const.OFFPATHPENALTY} currins;{const.FOOD_INCENTIVE} dist;{mostFit.distance} offP;{mostFit.offPath} cons;{mostFit.consecutiveFood} food;{mostFit.food_touched}")
         fd.write('\n')
         fd.write(f"{mostFit.gene.genotype}")
         fd.write('\n')
@@ -34,8 +38,8 @@ for num in range(const.GENERATIONS + 1):
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFit))
         fd.write('\n')
-    CurrHiveMind.dynamicFitnessCheck(mostFit)
-    CurrHiveMind.reassessFitnesses()
+    # CurrHiveMind.dynamicFitnessCheck(mostFit)
+    # CurrHiveMind.reassessFitnesses()
         
 with open("fitness_values.txt", "a") as fd:
     fd.write(f"\n Attempt done; max fit {maxHeighest}")

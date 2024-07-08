@@ -8,6 +8,8 @@ import const
 class HiveMind:
     def __init__(self, numAgents):
         self.agentList = []
+        self.projectionTally = 0
+        self.mutateTally = 0
         self.rules = GGraph(const.RULES)
         self.grid = Grid(const.GRID_WIDTH, const.GRID_HEIGHT)
         for i in range(numAgents):        
@@ -34,16 +36,22 @@ class HiveMind:
             agent.sense(neighboorsAgents)
             
     def initiateActUpdate(self):
+        self.projectionTally = 0
+        self.mutateTally = 0
         for agent in self.agentList:
             agent.actUpdate()
-    
+            self.projectionTally += agent.projectionresult
+            self.mutateTally += agent.mutateresult
+            
     def dynamicFitnessCheck(self, topAgent):
         if topAgent.offPath > (const.FITNESS_UPPER_THRESHOLD * topAgent.distance):
-            const.OFFPATHPENALTY = const.OFFPATHPENALTY * const.PENALTY_RATE_INCREASE
-            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * const.INCENTIVE_RATE_INCREASE
+            const.OFFPATHPENALTY = np.round((const.OFFPATHPENALTY * const.PENALTY_RATE_INCREASE), 2)
         elif topAgent.offPath < (const.FITNESS_LOWER_THRESHOLD * topAgent.distance):
-            const.OFFPATHPENALTY = const.OFFPATHPENALTY * const.PENALTY_RATE_DECREASE
-            const.FOOD_INCENTIVE = const.FOOD_INCENTIVE * const.INCENTIVE_RATE_DECREASE
+            const.OFFPATHPENALTY = np.round((const.OFFPATHPENALTY * const.PENALTY_RATE_DECREASE), 2)
+        if topAgent.consecutiveFood > (const.FITNESS_FOOD_UPPER_THRESHOLD * topAgent.food_touched):
+            const.CONSECUTIVE_FOOD = np.round((const.CONSECUTIVE_FOOD * const.CONSEC_RATE_DECREASE), 2)
+        elif topAgent.consecutiveFood < (const.FITNESS_FOOD_LOWER_THRESHOLD * topAgent.distance):
+            const.CONSECUTIVE_FOOD = np.round((const.CONSECUTIVE_FOOD * const.CONSEC_RATE_INCREASE), 2)
             
     def reassessFitnesses(self):
         for agent in self.agentList:
@@ -62,4 +70,11 @@ class HiveMind:
             for agent in self.agentList:
                 fd.write(agent.phenotype + "\n")
                 fd.flush()
+            fd.write("\n")
+        
+    def write_genotypes(self, num):
+        with open("genotypes.txt", "a") as fd:
+            fd.write("Generation: " + str(num) + "\n")
+            for agent in self.agentList:
+                fd.write(agent.id + ':' + agent.gene.cost + ' ' + agent.gene.genotype + "\n")
             fd.write("\n")

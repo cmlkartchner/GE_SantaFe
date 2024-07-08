@@ -53,16 +53,28 @@ class Gene():
         for num in range(len(newGeno)):
             if num < (len(newGeno) * .2):
                 if random.randint(1,10) > MUTATION_RATE:
-                    newGeno[num] = random.randint(-40, 40)
+                    input = random.randint(-40, 40)
+                    while input == 0:
+                        input = random.randint(-40, 40)
+                    newGeno[num] = input
             elif num < (len(newGeno) * .6):
                 if random.randint(1,10) > MUTATION_RATE - .1:
-                    newGeno[num] = random.randint(-40, 40)
+                    input = random.randint(-40, 40)
+                    while input == 0:
+                        input = random.randint(-40, 40)
+                    newGeno[num] = input
             elif num < (len(newGeno) * .8):
                 if random.randint(1,10) > MUTATION_RATE - .2:
-                    newGeno[num] = random.randint(-40, 40)
+                    input = random.randint(-40, 40)
+                    while input == 0:
+                        input = random.randint(-40, 40)
+                    newGeno[num] = input
             else:
                 if random.randint(1,10) > MUTATION_RATE - .3:
-                    newGeno[num] = random.randint(-40, 40)
+                    input = random.randint(-40, 40)
+                    while input == 0:
+                        input = random.randint(-40, 40)
+                    newGeno[num] = input
         return Gene(newGeno)
                 
     # Performs a basic crossover between Genes
@@ -71,19 +83,34 @@ class Gene():
         for agent in agents:
             genotypes.append(agent.gene.genotype)
         me = np.array(self.genotype)
+        # tempMe = me / 4
         children = []
         for gene in genotypes:
             parent = np.array(gene)
+            # tempPar = parent / 4
             bottom = np.dot(parent, parent)
             top = np.dot(me, parent)
             if bottom == 0 or top == 0:
                 children.append(Gene(np.round(me, decimals=0).astype(int).tolist()))
             else:
-                scalar =  5 * (top / bottom)
+                scalar = np.round(((top / bottom)), 3)
                 child = scalar * parent
-                children.append(Gene(np.round(child, decimals=0).astype(int).tolist()))
-                children.append(Gene(np.ceil(child).astype(int).tolist()))
-                children.append(Gene(np.floor(child).astype(int).tolist()))
+                if np.isfinite(child).any() and not np.isnan(child).any():
+                    try:
+                        childRound = 5 * np.round(child).astype(int)
+                        childCeil = 5 * np.ceil(child).astype(int)
+                        childFloor = 5 * np.floor(child).astype(int)
+                        # temp1 = childRound / 4
+                        # temp2 = childCeil / 4
+                        # temp3 = childFloor / 4
+                        children.append(Gene(childRound.tolist()))
+                        children.append(Gene(childCeil.tolist()))
+                        children.append(Gene(childFloor.tolist()))
+                    except RuntimeWarning as rw:
+                        print('Caught RuntimeWarning ', rw)
+                        print('\n')
+                        print(child)
+                    
         return children
         # nlength = len(genotypes)
         # initParents = np.array(genotypes)

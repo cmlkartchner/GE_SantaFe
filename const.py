@@ -1,21 +1,21 @@
 # production constrants
 POPULATION_LIMIT = 100
-GENE_LEN = 100
-NEIGHBOOR_SIZE = 8
+GENE_LEN = 75
+NEIGHBOOR_SIZE = 4
 
 # evolve constants
-GENERATIONS = 50
+GENERATIONS = 200
 
-Base_DIVERSITY = .7
-Base_FOOD_INCENTIVE = 1.1
-Base_CONSECUTIVE_FOOD = .7
-Base_OFFPATHPENALTY = .2
-Base_DISTANCEPINCH = .05
-Base_MUTATION_RATE = .9
+Base_DIVERSITY = .6
+Base_FOOD_INCENTIVE = 1.5
+Base_CONSECUTIVE_FOOD = .3
+Base_OFFPATHPENALTY = .3
+Base_DISTANCEPINCH = 0.05
+Base_MUTATION_RATE = .8
 
 DIVERSITY = 0
-LEARNED_ACCP = .5
-SELFTAUGHT_ACCP = .8
+LEARNED_ACCP = .7
+SELFTAUGHT_ACCP = .7
 FOOD_INCENTIVE = 0
 CONSECUTIVE_FOOD = 0
 DISTANCEPINCH = 0
@@ -23,13 +23,19 @@ MUTATION_RATE = 0
 OFFPATHPENALTY = 0  
 
 INCENTIVE_RATE_INCREASE = 1.1
-PENALTY_RATE_INCREASE = 1.2
+PENALTY_RATE_INCREASE = 1.05
 
 INCENTIVE_RATE_DECREASE = .90
-PENALTY_RATE_DECREASE = .80
+PENALTY_RATE_DECREASE = .95
 
-FITNESS_UPPER_THRESHOLD = 0.65
-FITNESS_LOWER_THRESHOLD = 0.5
+CONSEC_RATE_INCREASE = 1.1
+CONSEC_RATE_DECREASE = .9
+
+FITNESS_UPPER_THRESHOLD = 0.7
+FITNESS_LOWER_THRESHOLD = 0.3
+
+FITNESS_FOOD_UPPER_THRESHOLD = 0.95
+FITNESS_FOOD_LOWER_THRESHOLD = 0.7
 
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
@@ -67,7 +73,7 @@ THE_GRID = """
     ............#...#.........#.....
     ............#..........#........
     ............#...................
-    ...##. .#####....#..............
+    ...##...#####....#..............
     .#..............#...............
     .#..............#...............
     .#......#######.................
