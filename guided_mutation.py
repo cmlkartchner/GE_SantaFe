@@ -13,7 +13,7 @@ RULES = { # each item in nested list will be a child to add to parent
     }
 non_terminals_list = ["S", "E", "F", "N"]
 terminals = ["+", "-", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
+GENE_LEN = 20
 def parse_expression(rules, gene, tree, non_terminals):
         # non_termianls = list of references to leaf non-termianls in tree not finished (TREES)
         # for each non-terminal:
@@ -40,23 +40,23 @@ def parse_expression(rules, gene, tree, non_terminals):
 
                 # ++current_codon
                 gene.current_codon += 1
-                
 
                 # repeat on the non-terminals in the production
                 parse_expression(rules, gene, tree, non_terminals)
 
-def generate_phenotype_start(gene, tree, rules, start_symbol):
+def generate_phenotype_start(gene, rules, start_symbol):
         # repeatedly generate a tree until it contains no terminals (only for start, not mutation/crossover)
         gene.phenotype = ""
+        tree = Node(start_symbol, [])
+        to_do = [tree]
         while True:
-            to_do = [tree]
             parse_expression(rules, gene, tree, to_do)
             if len(to_do) == 0:
                 break
             gene.genotype = [random.randint(0,100) for i in range(GENE_LEN)]
             gene.current_codon = 0
             tree = Node(start_symbol, [])
-
+            to_do = [tree]
         gene.tree = tree #TODO: add variable to class
         create_phenotype_string(gene, tree) # alters gene.phenotype
         return gene.phenotype
@@ -70,23 +70,18 @@ def create_phenotype_string(gene, tree):
     return gene.phenotype
 
 # TESTING
-g = Gene([random.randint(0,100) for i in range(10)],0)
+g = Gene([random.randint(0,100) for i in range(GENE_LEN)],0)
 #g = Gene([0,0,4,0,4,3,9], 0) #[random.randint(0,100) for i in range(100)]
 #g = Gene([0,0,4], 0) # intentionally incomplete gene
-g.phenotype = ""
-tree = Node("S", [])
-to_do = [tree]
-
-generate_phenotype_start(g, tree, RULES, "S")
-# parse_expression(RULES, g, tree, to_do)
-# create_phenotype_string(g, tree)
-print(tree)
-print(to_do)
+#g = Gene([61, 99, 69, 6, 36, 12, 39, 84, 44, 26, 0, 95, 95, 98, 6, 50, 60, 19, 51, 65],0)
+#g = Gene([23, 29, 65, 58, 3, 88, 87, 29, 78, 40, 73, 32, 19, 62, 73, 25, 72, 73, 63, 47],0)
+#parse_expression(RULES, g, tree, [tree])
+generate_phenotype_start(g, RULES, "S")
 print(g.phenotype)
+print(g.tree)
 
-# how to detect if a tree has non-terminals.
-# well, we should we able to construct a string using the 'leaves'
 
+# ----------------- GUIDED MUTATION -----------------
 # CN1 = mutating node
 # create tree to show the whole grammar translation process
 
