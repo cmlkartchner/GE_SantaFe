@@ -28,8 +28,15 @@ def parse_expression(rules, gene, tree, non_terminals):
 
                 # the production needs to be used to append to the tree
                 insert_point = -len(non_terminals)
+                num_child = 1 # starts at 1 index
                 for child in production: #[E, +, E] # "E" is a child
-                    new_node = Node(child, [])
+                    new_node = Node(child, []) 
+                    if non_terminal.coordinate is None:
+                        new_node.coordinate = (num_child,) # always adding another layer to right
+                    else:
+                        new_node.coordinate = non_terminal.coordinate + (num_child,) # always adding another layer to right
+                    num_child += 1
+                    # set coordinate
                     non_terminal.add_child(new_node) # expand tree
 
                     # update non-terminal list
@@ -68,6 +75,7 @@ def create_phenotype_string(gene, tree):
     for child in tree.children:
         create_phenotype_string(gene, child)
     return gene.phenotype
+##################################
 
 # TESTING
 g = Gene([random.randint(0,100) for i in range(GENE_LEN)],0)
@@ -80,6 +88,7 @@ generate_phenotype_start(g, RULES, "S")
 print(g.phenotype)
 print(g.tree)
 
+#########
 
 # ----------------- GUIDED MUTATION -----------------
 # CN1 = mutating node

@@ -3,10 +3,11 @@
 
 class Node:
 
-    def __init__(self, symbol, children):
+    def __init__(self, symbol, children, is_root=False):
         self.symbol = symbol
         self.children = children
         self.coordinate = None # (1,1) = 'first child of the first child of the root'
+        self.is_root = is_root
     
     def add_child(self, child):
         self.children.append(child)
