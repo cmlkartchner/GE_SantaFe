@@ -262,7 +262,7 @@ class Agent:
         totalDistance = 0
         for agent in agents:
             totalFood += agent.food_touched
-            totalConsecu += agent.consecutivefood
+            totalConsecu += agent.consecutiveFood
             totalOffPath += agent.offPath
             totalDistance += agent.distance
         totalFood = np.round((totalFood / len(agents)), 2)
