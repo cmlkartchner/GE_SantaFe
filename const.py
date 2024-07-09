@@ -4,7 +4,7 @@ GENE_LEN = 200
 NEIGHBOOR_SIZE = 4
 
 # evolve constants
-GENERATIONS = 200
+GENERATIONS = 150
 
 Base_DIVERSITY = .6
 Base_FOOD_INCENTIVE = 1.75
@@ -37,7 +37,10 @@ FITNESS_PEN_LOWER_THRESHOLD = 0.3
 FITNESS_FOOD_UPPER_THRESHOLD = 0.8
 FITNESS_FOOD_LOWER_THRESHOLD = 0.7
 
+POPULATION_TOLERANCE = .75
+
 CROSSOVER_PRODUCTION = 2
+NOVELTY_TOLERANCE = .25
 
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover

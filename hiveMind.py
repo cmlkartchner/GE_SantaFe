@@ -57,9 +57,9 @@ class HiveMind:
                 aboveThreshold += 1
             elif agent.consecutiveFood < (const.FITNESS_FOOD_LOWER_THRESHOLD * agent.food_touched):
                 belowThreshold += 1
-        if aboveThreshold > belowThreshold and aboveThreshold > (len(self.agentList) * .5):
+        if aboveThreshold > belowThreshold and aboveThreshold > (len(self.agentList) * const.POPULATION_TOLERANCE):
             const.CONSECUTIVE_FOOD = np.round((const.CONSECUTIVE_FOOD * const.CONSEC_RATE_DECREASE), 2)
-        elif aboveThreshold < belowThreshold and belowThreshold > (len(self.agentList) * .5):
+        elif aboveThreshold < belowThreshold and belowThreshold > (len(self.agentList) * const.POPULATION_TOLERANCE):
             const.CONSECUTIVE_FOOD = np.round((const.CONSECUTIVE_FOOD * const.CONSEC_RATE_INCREASE), 2)
         # for agent in self.agentList:
         #     if agent.offPath > (const.FITNESS_PEN_UPPER_THRESHOLD * agent.distance):

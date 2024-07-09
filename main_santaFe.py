@@ -29,9 +29,7 @@ for num in range(const.GENERATIONS + 1):
     if mostFull.food_touched > maxHeighest:
         maxHeighest = mostFull.food_touched
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} Production: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
-        fd.write('\n')
-        fd.write(f"gen{num} highest {mostFull.id} food touched: {mostFull.food_touched} Score: {mostFull.gene.cost} Production: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
+        fd.write(f"gen{num} MF {mostFull.id} HS {mostFit.id} MFfood: {mostFull.food_touched} HSfood: {mostFit.food_touched} MFScore: {mostFull.gene.cost} HSScore: {mostFit.gene.cost} Production: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
         fd.write(f"Gen{num} stat: currcon;{const.CONSECUTIVE_FOOD} currpen;{const.OFFPATHPENALTY} currins;{const.FOOD_INCENTIVE} dist;{mostFull.distance} offP;{mostFull.offPath} cons;{mostFull.consecutiveFood} food;{mostFull.food_touched}")
@@ -42,8 +40,8 @@ for num in range(const.GENERATIONS + 1):
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFull))
         fd.write('\n')
-    CurrHiveMind.dynamicFitnessCheckAll()
-    CurrHiveMind.reassessFitnesses()
+    # CurrHiveMind.dynamicFitnessCheckAll()
+    # CurrHiveMind.reassessFitnesses()
         
 with open("fitness_values.txt", "a") as fd:
     fd.write(f"\n Attempt done; max fit {maxHeighest}")

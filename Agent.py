@@ -271,9 +271,10 @@ class Agent:
         totalDistance = np.round((totalDistance / len(agents)), 2)
         novelAgents = []
         for agent in agents:
-            if (np.abs(totalFood - agent.food_touched) > totalFood * .5) and (np.abs(totalConsecu - agent.consecutiveFood) > totalConsecu * .5) and (np.abs(totalOffPath - agent.offPath) > totalOffPath * .5) and (np.abs(totalDistance - agent.distance) > totalDistance * .5):
+            if (np.abs(totalOffPath - agent.offPath) > totalOffPath * const.NOVELTY_TOLERANCE) and (np.abs(totalDistance - agent.distance) > totalDistance * const.NOVELTY_TOLERANCE):
                 novelAgents.append(agent)
         return novelAgents
+    # (np.abs(totalFood - agent.food_touched) > totalFood * .5) and (np.abs(totalConsecu - agent.consecutiveFood) > totalConsecu * .5) and (
         
     def actUpdate(self):
         self.projectionresult = 0
