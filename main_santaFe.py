@@ -21,24 +21,28 @@ for num in range(const.GENERATIONS + 1):
     CurrHiveMind.initiateSense()
     CurrHiveMind.initiateActUpdate()
     CurrHiveMind.write_fitness_to_file()
-    CurrHiveMind.write_genotypes()
+    # CurrHiveMind.write_genotypes()
     mostFit = CurrHiveMind.getStrongestAgent()
+    mostFull = CurrHiveMind.getMostFullAgent()
     mostFit.run_phenotype()
-    if mostFit.food_touched > maxHeighest:
-        maxHeighest = mostFit.food_touched
+    mostFull.run_phenotype()
+    if mostFull.food_touched > maxHeighest:
+        maxHeighest = mostFull.food_touched
     with open("fitness_values.txt", "a") as fd:
-        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} Projection: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
+        fd.write(f"gen{num} highest {mostFit.id} food touched: {mostFit.food_touched} Score: {mostFit.gene.cost} Production: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
+        fd.write('\n')
+        fd.write(f"gen{num} highest {mostFull.id} food touched: {mostFull.food_touched} Score: {mostFull.gene.cost} Production: {CurrHiveMind.projectionTally} mutate: {CurrHiveMind.mutateTally}")
         fd.write('\n')
     with open("phenotypes.txt", "a") as fd:
-        fd.write(f"Gen{num} stat: currcon;{const.CONSECUTIVE_FOOD} currpen;{const.OFFPATHPENALTY} currins;{const.FOOD_INCENTIVE} dist;{mostFit.distance} offP;{mostFit.offPath} cons;{mostFit.consecutiveFood} food;{mostFit.food_touched}")
+        fd.write(f"Gen{num} stat: currcon;{const.CONSECUTIVE_FOOD} currpen;{const.OFFPATHPENALTY} currins;{const.FOOD_INCENTIVE} dist;{mostFull.distance} offP;{mostFull.offPath} cons;{mostFull.consecutiveFood} food;{mostFull.food_touched}")
         fd.write('\n')
-        fd.write(f"{mostFit.gene.genotype}")
+        fd.write(f"{mostFull.gene.genotype}")
         fd.write('\n')
-        fd.write(mostFit.phenotype)
+        fd.write(mostFull.phenotype)
         fd.write('\n')
-        fd.write(CurrHiveMind.grid.printed_history(mostFit))
+        fd.write(CurrHiveMind.grid.printed_history(mostFull))
         fd.write('\n')
-    # CurrHiveMind.dynamicFitnessCheck(mostFit)
+    # CurrHiveMind.dynamicFitnessCheckAll()
     # CurrHiveMind.reassessFitnesses()
         
 with open("fitness_values.txt", "a") as fd:

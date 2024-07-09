@@ -114,7 +114,7 @@ class Agent:
             if self.isConsecutive is True:
                 self.consecutiveFood += 1
             self.isConsecutive = True
-        elif not isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position in self.grid.history[self.id]: 
+        elif not isinstance(self.grid.array[self.position[1]][self.position[0]], Food) or (isinstance(self.grid.array[self.position[1]][self.position[0]], Food) and self.position in self.grid.history[self.id]): 
             self.offPath += 1
             self.isConsecutive = False
         else:
@@ -221,7 +221,8 @@ class Agent:
             self.offPath = 0
             if self.phenotype is None:
                 self.phenotype = self.gene.generate_phenotype(self.rules, "<code>")
-            self.parse_phenotype()
+            if self.func is None:
+                self.parse_phenotype()
             #self.position = (random.randint(0,GRID_WIDTH), random.randint(0,GRID_HEIGHT))
             while(True):
                 self.run_phenotype_once()
@@ -253,32 +254,63 @@ class Agent:
             if agent.gene.cost >= self.gene.cost:
                 parents.append(agent)
         return parents        
+    
+    def novelty_select(self, agents):
+        totalFood = 0
+        totalConsecu = 0
+        totalOffPath = 0
+        totalDistance = 0
+        for agent in agents:
+            totalFood += agent.food_touched
+            totalConsecu += agent.consecutivefood
+            totalOffPath += agent.offPath
+            totalDistance += agent.distance
+        totalFood = np.round((totalFood / len(agents)), 2)
+        totalConsecu = np.round((totalConsecu / len(agents)), 2)
+        totalOffPath = np.round((totalOffPath / len(agents)), 2)
+        totalDistance = np.round((totalDistance / len(agents)), 2)
+        novelAgents = []
+        for agent in agents:
+            if (np.abs(totalFood - agent.food_touched) > totalFood * .5) and (np.abs(totalConsecu - agent.consecutiveFood) > totalConsecu * .5) and (np.abs(totalOffPath - agent.offPath) > totalOffPath * .5) and (np.abs(totalDistance - agent.distance) > totalDistance * .5):
+                novelAgents.append(agent)
+        return novelAgents
         
     def actUpdate(self):
         self.projectionresult = 0
         self.mutateresult = 0
-        # parentAgents = self.parentSelection()
+        self.memory.append(self)
         childrenGenes = self.gene.crossoverProduction(self.memory)
         agents = []
         for g in childrenGenes:
             a = Agent(self.grid, self.rules, id='testrun', gene=g)
             agents.append(a)
             a.run_phenotype()
+        novelAgents = self.novelty_select(agents)
         pickme = []
-        for agent in agents:
+        for agent in novelAgents:
             if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.LEARNED_ACCP):
                 pickme.append(agent)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
             self.gene = pickme[num].gene
             self.phenotype = pickme[num].phenotype
+            self.func = pickme[num].func
+            self.distance = pickme[num].distance
+            self.offPath = pickme[num].offPath
+            self.food_touched = pickme[num].food_touched
+            self.consecutiveFood = pickme[num].consecutiveFood
             self.projectionresult += 1 
         else:
             a = Agent(self.grid, self.rules, id='testrun', gene=self.gene.mutate())
             a.run_phenotype()
             if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.SELFTAUGHT_ACCP):
                 self.gene = a.gene
+                self.func = a.func
+                self.distance = a.distance
                 self.phenotype = a.phenotype
+                self.offPath = a.offPath
+                self.food_touched = a.food_touched
+                self.consecutiveFood = a.consecutiveFood
                 self.mutateresult += 1
 
 if __name__ == "__main__":

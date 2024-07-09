@@ -2,7 +2,7 @@ import numpy as np
 import re
 import random
 # from Grid_Food_EndExpect import Grid
-from const import GENE_LEN, MUTATION_RATE
+from const import GENE_LEN, MUTATION_RATE, CROSSOVER_PRODUCTION
 
 class Gene():
     def __init__(self, genotype) -> None:
@@ -52,33 +52,45 @@ class Gene():
         newGeno = self.genotype.copy()
         for num in range(len(newGeno)):
             if num < (len(newGeno) * .2):
-                if random.randint(1,10) > MUTATION_RATE:
+                if random.randint(1,100) > (100 * MUTATION_RATE):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
                     newGeno[num] = input
             elif num < (len(newGeno) * .6):
-                if random.randint(1,10) > MUTATION_RATE - .1:
+                if random.randint(1,100) > (100 * (MUTATION_RATE - .1)):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
                     newGeno[num] = input
             elif num < (len(newGeno) * .8):
-                if random.randint(1,10) > MUTATION_RATE - .2:
+                if random.randint(1,100) > (100 * (MUTATION_RATE - .2)):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
                     newGeno[num] = input
             else:
-                if random.randint(1,10) > MUTATION_RATE - .3:
+                if random.randint(1,100) > (100 * (MUTATION_RATE - .3)):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
                     newGeno[num] = input
         return Gene(newGeno)
-                
-    # Performs a basic crossover between Genes
-    def crossoverProduction(self, agents): 
+             
+    def crossoverProduction(self, agents):
+        genotypes = []
+        for agent in agents:
+            genotypes.append(agent.gene.genotype)
+        children = []
+        for x in range(CROSSOVER_PRODUCTION * len(genotypes)):
+            newGene = []
+            for y in range(len(genotypes[0])):
+                randGene = random.randint(0, len(genotypes) - 1)
+                newGene.append(genotypes[randGene][y])
+            children.append(Gene(newGene))
+        return children
+    
+    def projectionProduction(self, agents): 
         genotypes = []
         for agent in agents:
             genotypes.append(agent.gene.genotype)
@@ -110,7 +122,6 @@ class Gene():
                         print('Caught RuntimeWarning ', rw)
                         print('\n')
                         print(child)
-                    
         return children
         # nlength = len(genotypes)
         # initParents = np.array(genotypes)
