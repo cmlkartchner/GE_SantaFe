@@ -64,13 +64,13 @@ class Gene():
                         input = random.randint(-40, 40)
                     newGeno[num] = input
             elif num < (len(newGeno) * .8):
-                if random.randint(1,100) > (100 * (MUTATION_RATE - .2)):
+                if random.randint(1,100) > (100 * (MUTATION_RATE - .15)):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
                     newGeno[num] = input
             else:
-                if random.randint(1,100) > (100 * (MUTATION_RATE - .3)):
+                if random.randint(1,100) > (100 * (MUTATION_RATE - .2)):
                     input = random.randint(-40, 40)
                     while input == 0:
                         input = random.randint(-40, 40)
@@ -87,7 +87,7 @@ class Gene():
             for y in range(len(genotypes[0])):
                 randGene = random.randint(0, len(genotypes) - 1)
                 newGene.append(genotypes[randGene][y])
-            children.append(Gene(newGene))
+            children.append(Gene(newGene).mutate())
         return children
     
     def projectionProduction(self, agents): 

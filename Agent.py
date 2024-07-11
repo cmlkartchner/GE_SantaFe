@@ -271,7 +271,7 @@ class Agent:
         totalDistance = np.round((totalDistance / len(agents)), 2)
         novelAgents = []
         for agent in agents:
-            if (np.abs(totalFood - agent.food_touched) > totalFood * const.NOVELTY_TOLERANCE):
+            if (np.abs(totalFood - agent.food_touched) > totalFood * const.NOVELTY_TOLERANCE_FOOD):
                 novelAgents.append(agent)
         return novelAgents
     
@@ -279,11 +279,12 @@ class Agent:
         totalOffPath = 0
         for agent in agents:
             totalOffPath += agent.offPath
-        totalOffPath = np.round((totalOffPath / len(agents)), 2)
         novelAgents = []
-        for agent in agents:
-            if (np.abs(totalOffPath - agent.offPath) > totalOffPath * const.NOVELTY_TOLERANCE):
-                novelAgents.append(agent)
+        if len(agents) > 0:
+            totalOffPath = np.round((totalOffPath / len(agents)), 2)
+            for agent in agents:
+                if (np.abs(totalOffPath - agent.offPath) > totalOffPath * const.NOVELTY_TOLERANCE_OFFPATH):
+                    novelAgents.append(agent)
         return novelAgents
             # (np.abs(totalDistance - agent.distance) > totalDistance * const.NOVELTY_TOLERANCE)
             # (np.abs(totalOffPath - agent.offPath) > totalOffPath * const.NOVELTY_TOLERANCE) and
@@ -300,14 +301,14 @@ class Agent:
             agents.append(a)
             a.run_phenotype()
         novelFoodAgents = self.novelty_select(agents)
-        # novelOffPathAgents = self.novelty_select_OffPath(novelFoodAgents)
+        novelOffPathAgents = self.novelty_select_OffPath(novelFoodAgents)
         pickme = []
-        for agent in novelFoodAgents:
-            if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.LEARNED_ACCP):
+        for agent in novelOffPathAgents:
+            # if agent.gene.cost >= 0 and agent.gene.cost > (self.gene.cost * const.LEARNED_ACCP):
+            if agent.food_touched > 0 and (agent.food_touched >= (self.food_touched * const.LEARNED_ACCP)): 
                 pickme.append(agent)
         if len(pickme) > 0:
             num = random.randint(0, len(pickme) - 1)
-            # if (self.food_touched <= pickme[num].food_touched): 
             self.gene = pickme[num].gene
             self.phenotype = pickme[num].phenotype
             self.func = pickme[num].func
@@ -319,8 +320,8 @@ class Agent:
         else:
             a = Agent(self.grid, self.rules, id='testrun', gene=self.gene.mutate())
             a.run_phenotype()
-            # if a.food_touched >= self.food_touched:
-            if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.SELFTAUGHT_ACCP):
+            if a.food_touched > 0 and a.food_touched >= (self.food_touched * const.SELFTAUGHT_ACCP):
+            # if a.gene.cost >= 0 and a.gene.cost > (self.gene.cost * const.SELFTAUGHT_ACCP):
                 self.gene = a.gene
                 self.func = a.func
                 self.distance = a.distance
