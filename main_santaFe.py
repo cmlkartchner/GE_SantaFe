@@ -40,8 +40,8 @@ for num in range(const.GENERATIONS + 1):
         fd.write('\n')
         fd.write(CurrHiveMind.grid.printed_history(mostFull))
         fd.write('\n')
-    # CurrHiveMind.dynamicFitnessCheckAll()
-    # CurrHiveMind.reassessFitnesses()
+    CurrHiveMind.dynamicFitnessCheckAll()
+    CurrHiveMind.reassessFitnesses()
         
 with open("fitness_values.txt", "a") as fd:
     fd.write(f"\n Attempt done; max fit {maxHeighest}")
