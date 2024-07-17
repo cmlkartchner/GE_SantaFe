@@ -1,6 +1,6 @@
 # production constrants
 POPULATION_LIMIT = 100
-GENE_LEN = 200
+GENE_LEN = 400
 NEIGHBOOR_SIZE = 4
 
 # evolve constants
@@ -45,7 +45,7 @@ NOVELTY_TOLERANCE_OFFPATH = .5
 
 NUM_COMPETITORS = 5 # number of competitors used in tournament selection
 SELECTION_PROPORTION = 0.3 # proportion of population selected for parents for crossover
-NUM_MOVES = 400 # number of actions an agent can perform before simulation is ended
+NUM_MOVES = 600 # number of actions an agent can perform before simulation is ended
 TOURNAMENT_SIZE = 5
 POP_SIZE = 3 # number of parents to return from NSGA-II selection
 
