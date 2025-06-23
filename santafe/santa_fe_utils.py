@@ -189,6 +189,26 @@ class SantaFe_Agent:
             print("Invalid routine")
             self.num_food_eaten = -1
 
+    def parse_routine(self, routine):
+        # routine in a form like prog2(if_food_ahead(prog2(move,right),move))
+        # find each program
+        # append to list of functions to execute
+        # intended behavior: when encountering nested progn() and if_food_ahead(), the inside functions are not immediately executed
+        # in the case of progn(1, 2, ... , n), they are executed m, 1, 2, ... , n, n+1
+        # in the case of if_food_ahead(), arg1 is executed if true, arg2 executed if false, but after the preceding program
+        pass
+
+    def append_lambda(self, args, arguments, type): # IMPORTANT ADDITION TO FIX WEIRD LAMBDA ERRORS
+        # Capture current values of arguments[0] and arguments[1]
+        arg1, arg2 = arguments[0], arguments[1]
+        if type == "if_food_ahead":
+            args.append(lambda: self.if_food_ahead(arg1, arg2))
+        elif type == "prog2":
+            args.append(lambda: self.prog2(arg1, arg2))
+        elif type == "prog3":
+            arg3 = arguments[2]
+            args.append(lambda: self.prog3(arg1, arg2, arg3))
+
     def mark_trail(self):
         self.trail_food_eaten[self.x()][self.y()] = 1 # TODO: Double check that it's marking the place you want it to
 
@@ -430,8 +450,3 @@ def progn(*args):
     for arg in args:
         if arg is not None:
             arg()
-
-### TESTING ###
-
-
-
